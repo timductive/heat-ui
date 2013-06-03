@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load i18n sizeformat %}
+{% block title %}{% trans "Workflows" %}{% endblock %}
+
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("Workflows") %}
+{% endblock page_header %}
+
+{% block main %}
+<h1>Workflows</h1>
+
+{% endblock %}
