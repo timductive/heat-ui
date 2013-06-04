@@ -22,12 +22,6 @@ d1 = TableData()
 d2 = TableData()
 d2.id = '2'
 d2.stack_status = 'Create Failed'
-d2.view = mark_safe(
-        "<a href=''>Retry</a> | "
-        "<a href=''>Tasks</a> | "
-        "<a href=''>Topology</a> | "
-        "<a href=''>Logs</a>"
-)
 
 
 class IndexView(tables.DataTableView):

@@ -2,12 +2,45 @@
 {% load i18n sizeformat %}
 {% block title %}{% trans "Launch Stack" %}{% endblock %}
 
+{%  block css %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}heat/css/heat.css">
+
+{% endblock %}
 
 {% block page_header %}
   {% include "horizon/common/_page_header.html" with title=_("Launch Stack") %}
 {% endblock page_header %}
 
 {% block main %}
-<h1>Launch Stack</h1>
+    <h3>Launch a New Stack</h3>
+    <div id="new_stack" class="launchbox">
+        <label for="id_template_upload">Template File</label>
+
+        <span class="help-block" style="display: none;">A local template to upload.</span>
+        <div class="input">
+          <input id="id_template_upload" name="template_upload" type="file">
+        </div>
+
+        <label for="id_template_url">Template Location</label>
+
+        <span class="help-block" style="display: none;">An external (HTTP) URL to load the template from.</span>
+        <div class="input">
+          <input id="id_template_url" name="template_url" type="text">
+        </div>
+
+        <a href="/project/stacks/launch" title="Launch Stack" class="btn btn-small" id="stacks__action_launch">Launch Stack</a>
+    </div>
+
+    <h3>Clone a Previous Stack</h3>
+    {{ clone_table.render }}
+
+
+    <h3>Choose a Stack from a Catalogue</h3>
+    <div id="catalogue_stack" class="launchbox">
+
+
+
+    </div>
 
 {% endblock %}
