@@ -5,7 +5,7 @@
 {%  block css %}
     {{ block.super }}
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}heat/css/heat.css">
-
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
 {% endblock %}
 
 {% block page_header %}
@@ -35,12 +35,27 @@
     <h3>Clone a Previous Stack</h3>
     {{ clone_table.render }}
 
-
-    <h3>Choose a Stack from a Catalogue</h3>
-    <div id="catalogue_stack" class="launchbox">
-
-
-
+    <div id="cat_header">
+        <h3>Choose a Stack from a Catalogue</h3>
+        <form id="cat_form" method="get" action="">
+            <select name="cat_code" id="cat_code">
+                <option value="">Choose...</option>
+                {% if cat_code == "aws" %}
+                <option value="aws" selected="selected">AWS Templates</option>
+                {% else %}
+                <option value="aws">AWS Templates</option>
+                {%  endif %}
+            </select>
+        </form>
     </div>
+    {{ catalogue_table.render }}
+
+    <script>
+    $(document).ready(function() {
+        $("#cat_code").change(function() {
+            $("#cat_form").submit();
+        });
+    });
+    </script>
 
 {% endblock %}

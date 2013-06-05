@@ -31,7 +31,7 @@ class RetryStack(tables.BatchAction):
     action_past = _("Scheduled Retry of")
     data_type_singular = _("Stack")
     data_type_plural = _("Stacks")
-    classes = ('btn-danger', 'btn-terminate')
+    classes = ('btn', 'btn-primary')
 
     def allowed(self, request, stack=None):
         if stack.stack_status == 'Create Failed':
@@ -46,7 +46,7 @@ class CloneStack(tables.BatchAction):
     action_past = _("Scheduled Clone of")
     data_type_singular = _("Stack")
     data_type_plural = _("Stacks")
-    classes = ('btn-danger', 'btn-terminate')
+    classes = ('btn', 'btn-primary')
 
     def allowed(self, request, stack=None):
         return True
@@ -100,3 +100,40 @@ class CloneTable(DeploymentsTable):
         status_columns = ["status", ]
 
         row_actions = (CloneStack, )
+
+
+
+class LaunchCatalogue(tables.BatchAction):
+    name = "launch"
+    action_present = _("Launch")
+    action_past = _("Scheduled Launch of")
+    data_type_singular = _("Stack")
+    data_type_plural = _("Stacks")
+    classes = ('btn', 'btn-primary')
+
+    def allowed(self, request, stack=None):
+        return True
+
+    def action(self, request, stack_id):
+        pass
+
+class CatFilterAction(tables.FilterAction):
+    def filter(self, table, instances, filter_string):
+        """ Naive case-insensitive search. """
+        q = filter_string.lower()
+        return [instance for instance in instances
+                if q in instance.name.lower()]
+
+class CataloguesTable(tables.DataTable):
+    name = tables.Column("name", verbose_name=_("Template Name"),)
+    size = tables.Column("size", verbose_name=_("Size"))
+    view = tables.Column("view", verbose_name=_("View"))
+
+    class Meta:
+        name = "catalogue"
+        verbose_name = _("Catalogues")
+        #status_columns = ["status", ]
+        #table_actions = (LaunchCatalogue, DeleteStack,)
+        #row_class = CataloguesUpdateRow
+        table_actions = (CatFilterAction, )
+        row_actions = (LaunchCatalogue, )

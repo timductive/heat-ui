@@ -18,9 +18,9 @@ import horizon
 
 from heat import dashboard
 
-class Logging(horizon.Panel):
-    name = _("Logging")
-    slug = "logging"
+class Logs(horizon.Panel):
+    name = _("Logs")
+    slug = "logs"
     permissions = ('openstack.services.orchestration',)
 
 dashboard.Heat.register(Logging)

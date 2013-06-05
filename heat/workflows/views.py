@@ -14,7 +14,7 @@ class TableData(object):
     updated_time = str(datetime.now())
     stack_status = 'Create In Progress'
     view = mark_safe(
-        "<a href=''>Tasks</a> | "
+        "<a href=''>Workflow</a> | "
         "<a href=''>Topology</a> | "
         "<a href=''>Logs</a>")
 
