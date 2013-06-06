@@ -19,7 +19,7 @@ import horizon
 from heat import dashboard
 
 class Workflows(horizon.Panel):
-    name = _("Workflows")
+    name = _("Task Flows")
     slug = "workflows"
     permissions = ('openstack.services.orchestration',)
 

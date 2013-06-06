@@ -9,18 +9,19 @@ from heat.common.tables import WorkflowTable
 
 class TableData(object):
     id = '1'
-    stack_name = 'Wordpress'
+    stack_name = 'Wordpress3'
     creation_time = str(datetime.now())
     updated_time = str(datetime.now())
     stack_status = 'Create In Progress'
     view = mark_safe(
-        "<a href=''>Workflow</a> | "
+        "<a href=''>Task Flow</a> | "
         "<a href=''>Topology</a> | "
         "<a href=''>Logs</a>")
 
 d1 = TableData()
 d2 = TableData()
 d2.id = '2'
+d2.stack_name = 'Wordpress4'
 d2.stack_status = 'Create Failed'
 
 

@@ -21,7 +21,7 @@ import horizon
 class Heat(horizon.Dashboard):
     name = _("Heat")
     slug = "heat"
-    panels = ('deployments', 'workflows', 'launch_stack', 'logs')
-    default_panel = 'deployments'
+    panels = ('stacks', 'workflows', 'launch_stack', 'logs')
+    default_panel = 'stacks'
 
 horizon.register(Heat)

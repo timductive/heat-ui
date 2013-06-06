@@ -9,7 +9,7 @@ from heat.common.tables import DeploymentsTable
 
 class TableData(object):
     id = '1'
-    stack_name = 'Wordpress'
+    stack_name = 'Wordpress1'
     creation_time = str(datetime.now())
     updated_time = str(datetime.now())
     stack_status = 'Create Complete'
@@ -19,12 +19,7 @@ class TableData(object):
 d1 = TableData()
 d2 = TableData()
 d2.id = '2'
-d2.stack_status = 'Create in Progress'
-d2.view = mark_safe(
-        "<a href=''>Topology</a> | "
-        "<a href=''>Workflow</a> | "
-        "<a href=''>Logs</a>"
-    )
+d2.stack_name = 'Wordpress2'
 
 class IndexView(tables.DataTableView):
     table_class = DeploymentsTable

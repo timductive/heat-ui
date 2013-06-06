@@ -19,9 +19,9 @@ import horizon
 from heat import dashboard
 
 
-class Deployments(horizon.Panel):
-    name = _("Stacks (Deployments)")
-    slug = "deployments"
+class Stacks(horizon.Panel):
+    name = _("Stacks")
+    slug = "stacks"
     permissions = ('openstack.services.orchestration',)
 
-dashboard.Heat.register(Deployments)
+dashboard.Heat.register(Stacks)
