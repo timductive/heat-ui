@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{%  block css %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}heat/css/heat.css">
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/overcast/jquery-ui.min.css" type="text/css" media="all" />
+{% endblock %}
+
+{%  block js %}
+    {{ block.super }}
+
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        $(".datepicker").datepicker();
+    });
+    </script>
+
+    {% block heatjs %}
+    {% endblock %}
+{% endblock %}
