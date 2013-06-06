@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'heat/base.html' %}
 {% load i18n sizeformat %}
 {% block title %}{% trans "Logs" %}{% endblock %}
 
@@ -8,6 +8,19 @@
 {% endblock page_header %}
 
 {% block main %}
-<h1>Logs</h1>
+    <h3>Select a Stack and date range to view its logs:</h3>
+    <form id="log_form" class="form-row">
+        <select id="stack">
+            <option>Wordpress</option>
+            <option>Wordpress2</option>
+        </select>
+
+        <input type="text" class="datepicker" name="start_date" size="10" value="{{ today }}" />
+        -
+        <input type="text" class="datepicker" name="end_date" size="10" value="{{ today }}" />
+
+        <input type="submit" class="btn-primary btn-small" value="Submit" />
+    </form>
+
 
 {% endblock %}

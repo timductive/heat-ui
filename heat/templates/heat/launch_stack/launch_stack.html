@@ -1,12 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'heat/base.html' %}
 {% load i18n sizeformat %}
 {% block title %}{% trans "Launch Stack" %}{% endblock %}
-
-{%  block css %}
-    {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}heat/css/heat.css">
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-{% endblock %}
 
 {% block page_header %}
   {% include "horizon/common/_page_header.html" with title=_("Launch Stack") %}
@@ -29,7 +23,7 @@
           <input id="id_template_url" name="template_url" type="text">
         </div>
 
-        <a href="/project/stacks/launch" title="Launch Stack" class="btn btn-small" id="stacks__action_launch">Launch Stack</a>
+        <a href="/project/stacks/launch" class="btn btn-primary" id="stacks__action_launch">Launch Stack</a>
     </div>
 
     <h3>Clone a Previous Stack</h3>
@@ -50,6 +44,9 @@
     </div>
     {{ catalogue_table.render }}
 
+{% endblock %}
+
+{% block heatjs %}
     <script>
     $(document).ready(function() {
         $("#cat_code").change(function() {
@@ -57,5 +54,4 @@
         });
     });
     </script>
-
 {% endblock %}
