@@ -18,9 +18,9 @@ import horizon
 
 from heat import dashboard
 
-class Logs(horizon.Panel):
-    name = _("Logs")
-    slug = "logs"
+class TaskFlows(horizon.Panel):
+    name = _("Task Flows")
+    slug = "task_flows"
     permissions = ('openstack.services.orchestration',)
 
-dashboard.Heat.register(Logs)
+dashboard.Heat.register(TaskFlows)

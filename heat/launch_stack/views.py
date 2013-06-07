@@ -5,21 +5,7 @@ import xml.etree.ElementTree as ET
 from django.views import generic
 from django.utils.safestring import mark_safe
 
-from heat.common.tables import CloneTable, CataloguesTable
-
-class TableData(object):
-    id = '1'
-    stack_name = 'Wordpress1'
-    creation_time = str(datetime.now())
-    updated_time = str(datetime.now())
-    stack_status = 'Create Complete'
-    view = mark_safe("<a href=''>Topology</a> | "
-                              "<a href=''>Logs</a>")
-
-d1 = TableData()
-d2 = TableData()
-d2.id = '2'
-d2.stack_name = 'Wordpress2'
+from heat.common.tables import CloneTable, CataloguesTable, TableData
 
 class ContentBase(object):
     def __getattr__(self, key):
@@ -42,6 +28,10 @@ class IndexView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         request = self.request
+
+        d1 = TableData(id='1',stack_name='Wordpress1')
+        d2 = TableData(id='2',stack_name='Wordpress2')
+
         data = [d1, d2]
         cat_code = request.GET.get('cat_code','')
         templates = ''

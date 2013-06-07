@@ -1,10 +1,28 @@
+from datetime import datetime
+
 from django.utils.translation import ugettext_lazy as _
 from django.template.defaultfilters import title, timesince
+from django.utils.safestring import mark_safe
 
 from horizon import tables
 from horizon.utils.filters import replace_underscores, parse_isotime
 
-
+class TableData(object):
+    def __init__(self, id='', stack_name='', type='stacks', *args, **kwargs):
+        self.id = id
+        self.stack_name = stack_name
+        self.creation_time = str(datetime.now())
+        self.updated_time = str(datetime.now())
+        if type == 'taskflows':
+            self.stack_status = 'Create In Progress'
+            self.view = mark_safe(
+                                "<a href='taskflow/"+stack_name+"/'>Task Flow</a> | "
+                                "<a href='topology/"+stack_name+"/'>Topology</a> | "
+                                "<a href='logs/"+stack_name+"/'>Logs</a>")
+        else:
+            self.stack_status = 'Create Complete'
+            self.view = mark_safe("<a href='topology/"+stack_name+"/'>Topology</a> | "
+                                      "<a href='logs/"+stack_name+"/'>Logs</a>")
 
 
 

@@ -6,6 +6,15 @@
     <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/overcast/jquery-ui.min.css" type="text/css" media="all" />
 {% endblock %}
 
+{% block main %}
+    {{ block.super }}
+    <p>{{ breadcrumbs }}</p>
+    {% block heatContent %}
+
+    {% endblock %}
+
+{% endblock %}
+
 {%  block js %}
     {{ block.super }}
 
