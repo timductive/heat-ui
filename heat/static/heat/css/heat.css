@@ -11,3 +11,7 @@ form {margin:0;}
 .btn {display:inline;}
 
 #ui-datepicker-div {display:none;}
+
+.log_date{width:80px;}
+#logs .error {color:red;font-weight:bold;}
+#logs .debug {color:green;font-style:italic;}

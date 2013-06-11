@@ -16,13 +16,14 @@ class TableData(object):
         if type == 'taskflows':
             self.stack_status = 'Create In Progress'
             self.view = mark_safe(
-                                "<a href='taskflow/"+stack_name+"/'>Task Flow</a> | "
+                                "<a href='task_flow/"+stack_name+"/'>Task Flow</a> | "
                                 "<a href='topology/"+stack_name+"/'>Topology</a> | "
                                 "<a href='logs/"+stack_name+"/'>Logs</a>")
         else:
             self.stack_status = 'Create Complete'
             self.view = mark_safe("<a href='topology/"+stack_name+"/'>Topology</a> | "
                                       "<a href='logs/"+stack_name+"/'>Logs</a>")
+
 
 
 
@@ -155,3 +156,16 @@ class CataloguesTable(tables.DataTable):
         #row_class = CataloguesUpdateRow
         table_actions = (CatFilterAction, )
         row_actions = (LaunchCatalogue, )
+
+class LogsTable(tables.DataTable):
+
+    date = tables.Column("date", verbose_name=_("Date"),classes=['log_date'])
+    time = tables.Column("time", verbose_name=_("Time"),)
+    nbr = tables.Column("nbr", verbose_name=_("Nbr"),)
+    type = tables.Column("type", verbose_name=_("Type"),)
+    location = tables.Column("location", verbose_name=_("Location"))
+    description = tables.Column("description", verbose_name=_("Description"))
+
+    class Meta:
+        name = "logs"
+        verbose_name = _("Logs")
