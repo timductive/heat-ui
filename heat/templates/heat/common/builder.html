@@ -1,0 +1,167 @@
+{% extends 'heat/base.html' %}
+{% load i18n sizeformat %}
+{% block title %}{{ title }}{% endblock %}
+
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=title %}
+{% endblock page_header %}
+
+{% block heatContent %}
+    <div id="options">
+        <img id="db1" src="http://png-2.findicons.com/files/icons/989/ivista_2/128/database_3.png" />
+        <img id="srv1" src="http://cdn5.iconfinder.com/data/icons/HDRV/128/Graphite_Server_B.png" />
+
+    </div>
+    <div id="cv1"></div>
+
+    <div id="json"></div>
+
+{% endblock %}
+
+{% block heatjs %}
+<script>
+function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: evt.clientX - rect.left,
+          y: evt.clientY - rect.top
+        };
+      }
+
+var cv_width = $("#cv1").width();
+
+var stage = new Kinetic.Stage({
+    container: 'cv1',
+    width: cv_width,
+    height: 500
+});
+
+var layer = new Kinetic.Layer();
+
+var imageObj = new Image();
+imageObj.src = 'http://dev.w3.org/2007/mobileok-ref/test/data/ROOT/GraphicsForSpacingTest/1/largeTransparent.gif';
+imageObj.onload = function() {
+var yoda = new Kinetic.Image({
+  x: 200,
+  y: 50,
+  image: imageObj,
+  width: 106,
+  height: 118
+});
+
+// add the shape to the layer
+layer.add(yoda);
+
+// add the layer to the stage
+stage.add(layer);
+};
+
+
+
+
+var dragSrcEl = null;
+var DB = document.getElementById("db1");
+var SRV = document.getElementById("srv1");
+var TYPE = '';
+var DB_COUNT = 1;
+var SRV_COUNT = 1;
+
+//image
+DB.addEventListener('dragstart',function(e){
+    dragSrcEl = this;
+    TYPE = 'DB';
+});
+SRV.addEventListener('dragstart',function(e){
+    dragSrcEl = this;
+    TYPE = 'SRV';
+});
+
+
+var con = stage.getContainer();
+con.addEventListener('dragover',function(e){
+    e.preventDefault(); // !!important
+});
+//insert image to stage
+con.addEventListener('drop',function(e){
+    var mousePos = getMousePos(con, e);
+
+
+    var group = new Kinetic.Group({
+        draggable: true,
+    });
+
+
+    //interface circles
+    var circle = new Kinetic.Circle({
+        x: mousePos.x,
+        y: mousePos.y+70,
+        radius: 8,
+        fill: 'silver',
+        stroke: 'gray',
+        strokeWidth: 1
+      });
+    group.add(circle);
+
+
+
+    var image = new Kinetic.Image({
+      x: mousePos.x,
+      y: mousePos.y,
+    });
+    group.add(image);
+
+    // tooltip
+    //Setup auto-increment
+    var text = '';
+    if (TYPE == 'DB') {
+        text = 'MySQL ' + DB_COUNT;
+        DB_COUNT++;
+    } else {
+        text = 'Ubuntu ' + SRV_COUNT;
+        SRV_COUNT++;
+    }
+
+      var tooltip = new Kinetic.Label({
+        x: mousePos.x+60,
+        y: mousePos.y+20,
+        opacity: 0.75,
+      });
+
+      tooltip.add(new Kinetic.Tag({
+        fill: 'black',
+        pointerDirection: 'down',
+        pointerWidth: 10,
+        pointerHeight: 10,
+        lineJoin: 'round',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: 10,
+        shadowOpacity: 0.5
+      }));
+
+      tooltip.add(new Kinetic.Text({
+        text: text,
+        fontFamily: 'Calibri',
+        fontSize: 18,
+        padding: 5,
+        fill: 'white'
+      }));
+    group.add(tooltip);
+    layer.add(group);
+    imageObj2 = new Image();
+    imageObj2.src = dragSrcEl.src;
+    imageObj2.onload = function(){
+        image.setImage(imageObj2)
+        layer.draw()
+    };
+
+    var json = stage.toJSON();
+
+    $("#json").text(json);
+
+
+ });
+
+</script>
+{% endblock %}
