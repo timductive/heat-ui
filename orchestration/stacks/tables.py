@@ -25,7 +25,7 @@ from horizon import messages
 from heatclient import exc
 
 from openstack_dashboard import api
-from openstack_dashboard.dashboards.project.stacks import mappings
+import mappings
 
 LOG = logging.getLogger(__name__)
 
