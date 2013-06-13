@@ -1,13 +1,4 @@
-{% extends 'heat/base.html' %}
-{% load i18n sizeformat %}
-{% block title %}{{ title }}{% endblock %}
-
-
-{% block page_header %}
-  {% include "horizon/common/_page_header.html" with title=title %}
-{% endblock page_header %}
-
-{% block heatContent %}
+<div id="logs">
     <h3>Select a date range to query its logs:</h3>
     <form id="log_form" class="form-row">
 
@@ -20,5 +11,4 @@
     </form>
 
     {{ logs.render }}
-
-{% endblock %}
+</div>

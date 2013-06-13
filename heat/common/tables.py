@@ -26,24 +26,6 @@ class TableData(object):
 
 
 
-
-class DeleteStack(tables.BatchAction):
-    name = "delete"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of")
-    data_type_singular = _("Stack")
-    data_type_plural = _("Stacks")
-    classes = ('btn-danger', 'btn-terminate')
-
-    def allowed(self, request, stack=None):
-        if stack:
-            return True
-
-    def action(self, request, stack_id):
-        obj = self.table.get_object_by_id(stack_id)
-        name = self.table.get_object_display(obj)
-        # api.heat.stack_delete(request, stack_id)
-
 class RetryStack(tables.BatchAction):
     name = "retry"
     action_present = _("Retry")
@@ -73,6 +55,22 @@ class CloneStack(tables.BatchAction):
     def action(self, request, stack_id):
         pass
 
+class DeleteStack(tables.BatchAction):
+    name = "delete"
+    action_present = _("Delete")
+    action_past = _("Scheduled deletion of")
+    data_type_singular = _("Stack")
+    data_type_plural = _("Stacks")
+    classes = ('btn-danger', 'btn-terminate')
+
+    def allowed(self, request, stack=None):
+        if stack:
+            return True
+
+    def action(self, request, stack_id):
+        obj = self.table.get_object_by_id(stack_id)
+        name = self.table.get_object_display(obj)
+        # api.heat.stack_delete(request, stack_id)
 
 class DeploymentsTable(tables.DataTable):
     STATUS_CHOICES = (
@@ -80,7 +78,7 @@ class DeploymentsTable(tables.DataTable):
         ("Create Failed", False),
     )
     name = tables.Column("stack_name", verbose_name=_("Stack Name"),
-                           link="horizon:project:stacks:detail",)
+                           link="horizon:orchestration:stacks:detail",)
     created = tables.Column("creation_time",
                             verbose_name=_("Created"),
                             filters=(parse_isotime, timesince))
@@ -92,14 +90,13 @@ class DeploymentsTable(tables.DataTable):
                            verbose_name=_("Status"),
                            status=True,
                            status_choices=STATUS_CHOICES)
-    view = tables.Column("view",
-                         verbose_name=_("View"))
 
     class Meta:
         name = "deployments"
         verbose_name = _("Deployments")
         status_columns = ["status", ]
         row_actions = (DeleteStack, )
+
 
 
 class WorkflowTable(DeploymentsTable):

@@ -1,21 +1,17 @@
-{% extends 'heat/base.html' %}
+{% extends 'orchestration/base.html' %}
 {% load i18n sizeformat %}
-{% block title %}{{ title }}{% endblock %}
-
+{% block title %}{% trans "Stack Detail" %}{% endblock %}
 
 {% block page_header %}
   {% include "horizon/common/_page_header.html" with title=title %}
 {% endblock page_header %}
 
 {% block heatContent %}
-    <div id="topology_canvas"></div>
-
-    <div id="json"></div>
-
-    <div id="template">
-        {% include 'heat/common/template.json' %}
-    </div>
-
+<div class="row-fluid">
+  <div class="span12">
+  {{ tab_group.render }}
+  </div>
+</div>
 {% endblock %}
 
 {% block heatjs %}

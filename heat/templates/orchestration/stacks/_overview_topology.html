@@ -1,0 +1,14 @@
+{% load i18n sizeformat %}
+{% block title %}{{ title }}{% endblock %}
+
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=title %}
+{% endblock page_header %}
+
+{% block heatContent %}
+    <div id="topology_canvas"></div>
+
+    <div id="json"></div>
+
+{% endblock %}

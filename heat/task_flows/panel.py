@@ -16,7 +16,7 @@ from django.utils.translation import ugettext_lazy as _
 
 import horizon
 
-from heat import dashboard
+from orchestration import dashboard
 
 class TaskFlows(horizon.Panel):
     name = _("Task Flows")

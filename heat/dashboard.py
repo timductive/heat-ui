@@ -18,10 +18,16 @@ from django.utils.translation import ugettext_lazy as _
 
 import horizon
 
+class OrchestrationPanels(horizon.PanelGroup):
+    name = _("Orchestration")
+    slug = "orchestration"
+    panels = ('stacks', 'task_flows', 'launch_stack',)
+
 class Heat(horizon.Dashboard):
     name = _("Heat")
     slug = "heat"
-    panels = ('stacks', 'task_flows', 'launch_stack',)
+    panels = (OrchestrationPanels,)
     default_panel = 'stacks'
+    supports_tenants = True
 
 horizon.register(Heat)

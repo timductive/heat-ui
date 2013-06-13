@@ -3,12 +3,12 @@ from django.views.generic.base import TemplateView
 from horizon import exceptions
 from horizon import tables
 
-from heat.common.tables import WorkflowTable, TableData
-from heat.common.breadcrumbs import Breadcrumbs
+from orchestration.common.tables import WorkflowTable, TableData
+from orchestration.common.breadcrumbs import Breadcrumbs
 
 class IndexView(tables.DataTableView):
     table_class = WorkflowTable
-    template_name = 'heat/workflows/workflows.html'
+    template_name = 'orchestration/workflows/workflows.html'
 
     def get_data(self):
         request = self.request
@@ -25,7 +25,7 @@ class IndexView(tables.DataTableView):
 
 
 class TaskFlowView(Breadcrumbs):
-    template_name = 'heat/workflows/task_flow.html'
+    template_name = 'orchestration/workflows/task_flow.html'
 
     def get_context_data(self, **kwargs):
         stack_name = kwargs.get('stack_name','')

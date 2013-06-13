@@ -1,0 +1,80 @@
+{% extends 'orchestration/base.html' %}
+{% load i18n sizeformat %}
+{% block title %}{{ title }}{% endblock %}
+
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=title %}
+{% endblock page_header %}
+
+{% block heatContent %}
+    <div id="topology_canvas"></div>
+
+    <div id="json"></div>
+
+    <div id="template">
+    <pre class="prettyprint"><code>{% include 'heat/common/template.json' %}</code></pre>
+    </div>
+
+{% endblock %}
+
+{% block heatjs %}
+<script>
+$(document).ready(function() {
+    function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: evt.clientX - rect.left,
+          y: evt.clientY - rect.top
+        };
+    };
+
+    var cv_width = $("#topology_canvas").width();
+    var stage = new Kinetic.Stage({
+        container: 'topology_canvas',
+        width: cv_width,
+        height: 500
+    });
+
+    var layer = new Kinetic.Layer();
+    var group = new Kinetic.Group({
+
+    });
+    var complexText = new Kinetic.Text({
+        x: 50,
+        y: 50,
+        width: 100,
+        height: 100,
+        text: 'WikiDatabase',
+        fontSize: 12,
+        fontFamily: 'Calibri',
+        fill: '#555',
+        padding: 5,
+        align: 'center'
+    });
+
+    var rect = new Kinetic.Rect({x: 50,
+        y: 50,
+        width: 100,
+        height: 100,
+        stroke: '#555',
+        strokeWidth: 2,
+        fill: '#ddd',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: [5, 5],
+        shadowOpacity: 0.2,
+        cornerRadius: 10
+    });
+
+    // add the shapes to the layer
+    group.add(rect);
+    group.add(complexText);
+    layer.add(group);
+
+    // add the layer to the stage
+    stage.add(layer);
+});
+
+</script>
+{% endblock %}

@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from django.views import generic
 from django.utils.safestring import mark_safe
 
-from heat.common.tables import CloneTable, CataloguesTable, TableData
+from orchestration.common.tables import CloneTable, CataloguesTable, TableData
 
 class ContentBase(object):
     def __getattr__(self, key):
@@ -24,7 +24,7 @@ class AWSContent(ContentBase):
             self.content[key.lower()] = c.text
 
 class IndexView(generic.TemplateView):
-    template_name = 'heat/launch_stack/launch_stack.html'
+    template_name = 'orchestration/launch_stack/launch_stack.html'
 
     def get_context_data(self, **kwargs):
         request = self.request

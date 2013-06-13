@@ -8,12 +8,13 @@ class Breadcrumbs(TemplateView):
 
     def get_context_data(self, **kwargs):
         request = self.request
+
         url = request.get_full_path()
 
         crumbs = url.split('/')
         last_crumb = crumbs[-3:-1]
         current_crumb = last_crumb[0]
-        stack_name = last_crumb[1]
+        stack_id = last_crumb[1]
         crumbs = crumbs[1:3]
         breadcrumbs = ''
         build_url = ''
@@ -23,10 +24,7 @@ class Breadcrumbs(TemplateView):
                 if crumb != 'heat':
                     breadcrumbs+='<a href="'+build_url+'">'+title(replace_underscores(crumb))+'</a> |'
 
-        # build_url+='/'+current_crumb+'/'+stack_name+'/'
-        # breadcrumbs+=' <a href="'+build_url+'">'+title(replace_underscores(stack_name+' '+current_crumb))+'</a>'
-
-        breadcrumbs+=' '+title(replace_underscores(stack_name+' '+current_crumb))
+        breadcrumbs+=' '+title(replace_underscores(' '+current_crumb))
 
         breadcrumbs = mark_safe(breadcrumbs)
         context = super(Breadcrumbs, self).get_context_data(**kwargs)

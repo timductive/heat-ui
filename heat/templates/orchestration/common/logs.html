@@ -1,0 +1,24 @@
+{% extends 'orchestration/base.html' %}
+{% load i18n sizeformat %}
+{% block title %}{{ title }}{% endblock %}
+
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=title %}
+{% endblock page_header %}
+
+{% block heatContent %}
+    <h3>Select a date range to query its logs:</h3>
+    <form id="log_form" class="form-row">
+
+        <label>From:</label>
+        <input type="text" class="datepicker" name="start_date" size="10" value="{{ today }}" />
+        <label>To:</label>
+        <input type="text" class="datepicker" name="end_date" size="10" value="{{ today }}" />
+
+        <input type="submit" class="btn-primary btn-small" value="Submit" />
+    </form>
+
+    {{ logs.render }}
+
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, url
 
-from heat.common.views import TopologyView, LogView
+from orchestration.common.views import TopologyView, LogView
 from .views import IndexView
 
 urlpatterns = patterns('',

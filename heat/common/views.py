@@ -3,12 +3,12 @@ from datetime import datetime
 
 from django.utils.safestring import mark_safe
 
-from heat.common.tables import LogsTable
+from orchestration.common.tables import LogsTable
 from .breadcrumbs import Breadcrumbs
 
 
 class TopologyView(Breadcrumbs):
-    template_name = 'heat/common/topology.html'
+    template_name = 'orchestration/common/topology.html'
 
     def get_context_data(self, **kwargs):
         stack_name = kwargs.get('stack_name','')
@@ -24,7 +24,7 @@ class Log(object):
         self.description = ''
 
 class LogView(Breadcrumbs):
-    template_name = 'heat/common/logs.html'
+    template_name = 'orchestration/common/logs.html'
 
     def get_context_data(self, **kwargs):
         request = self.request
