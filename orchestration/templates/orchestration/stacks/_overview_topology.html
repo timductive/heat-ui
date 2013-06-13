@@ -1,14 +1,16 @@
-{% load i18n sizeformat %}
-{% block title %}{{ title }}{% endblock %}
+<div id="topology_canvas"></div>
 
+<div id="json"></div>
 
-{% block page_header %}
-  {% include "horizon/common/_page_header.html" with title=title %}
-{% endblock page_header %}
+<label>Stack Data:</label> {{ stack.stack_status|title }}: {{ stack.stack_status_reason }}
+<div id="stack">
+    {{ stack }}
+</div>
+<br><br>
 
-{% block heatContent %}
-    <div id="topology_canvas"></div>
+<label>Resource Data:</label>
+<div id="resource">{{ resource }}</div>
+<br><br>
 
-    <div id="json"></div>
-
-{% endblock %}
+<label>Events</label>
+<div id="events">{{ events }}</div>

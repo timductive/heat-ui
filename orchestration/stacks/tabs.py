@@ -34,9 +34,36 @@ class StackTopologyTab(tabs.Tab):
     name = _("Topology")
     slug = "topology"
     template_name = "orchestration/stacks/_overview_topology.html"
+    preload = False
 
     def get_context_data(self, request):
-        return {"stack": self.tab_group.kwargs['stack']}
+        context = {}
+        context['stack'] = stack = self.tab_group.kwargs['stack']
+
+        #Get Resources
+        try:
+            stack_identifier = '%s/%s' % (stack.stack_name, stack.id)
+            resources = api.heat.resources_list(self.request, stack_identifier)
+            LOG.debug('got resources %s' % resources)
+        except:
+            resources = []
+            messages.error(request, _(
+                'Unable to get resources for stack "%s".') % stack.stack_name)
+
+        #Get Events
+        try:
+            stack_identifier = '%s/%s' % (stack.stack_name, stack.id)
+            events = api.heat.events_list(self.request, stack_identifier)
+            LOG.debug('got events %s' % events)
+        except:
+            events = []
+            messages.error(request, _(
+                'Unable to get events for stack "%s".') % stack.stack_name)
+
+        context['resource'] = resources
+        context['events'] = events
+
+        return context
 
 class StackMetadataTab(tabs.Tab):
     name = _("Metadata")
