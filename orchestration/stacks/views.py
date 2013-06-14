@@ -26,6 +26,7 @@ from django.template.defaultfilters import title
 from openstack_dashboard import api
 
 from orchestration.common.breadcrumbs import Breadcrumbs
+from orchestration.common.jsonutils import to_json
 from .tables import StacksTable
 from .tabs import ResourceDetailTabs, StackDetailTabs
 from .workflows import LaunchStack
@@ -51,6 +52,7 @@ class IndexView(tables.DataTableView):
         try:
             stacks = api.heat.stacks_list(self.request)
             stacks = map(self._inject_name, stacks)
+            print stacks
         except:
             exceptions.handle(request,
                               _('Unable to retrieve stack list.'))

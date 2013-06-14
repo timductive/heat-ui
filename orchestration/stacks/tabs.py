@@ -23,10 +23,10 @@ from horizon import messages
 from horizon import tabs
 from openstack_dashboard import api
 
+from orchestration.common.tables import LogsTable
+from orchestration.common.jsonutils import to_json
 from .tables import EventsTable
 from .tables import ResourcesTable
-from orchestration.common.tables import LogsTable
-
 
 LOG = logging.getLogger(__name__)
 
@@ -38,7 +38,8 @@ class StackTopologyTab(tabs.Tab):
 
     def get_context_data(self, request):
         context = {}
-        context['stack'] = stack = self.tab_group.kwargs['stack']
+        stack = self.tab_group.kwargs['stack']
+        context['stack'] = to_json(stack)
 
         #Get Resources
         try:
@@ -60,8 +61,8 @@ class StackTopologyTab(tabs.Tab):
             messages.error(request, _(
                 'Unable to get events for stack "%s".') % stack.stack_name)
 
-        context['resource'] = resources
-        context['events'] = events
+        context['resources'] = to_json(resources)
+        context['events'] = to_json(events)
 
         return context
 

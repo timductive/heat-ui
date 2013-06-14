@@ -81,7 +81,8 @@ class DeploymentsTable(tables.DataTable):
                            link="horizon:orchestration:stacks:detail",)
     created = tables.Column("creation_time",
                             verbose_name=_("Created"),
-                            filters=(parse_isotime, timesince))
+                            filters=(parse_isotime, timesince),
+                            classes=['sort_me'])
     updated = tables.Column("updated_time",
                             verbose_name=_("Updated"),
                             filters=(parse_isotime, timesince))
