@@ -30,4 +30,4 @@ canvas {
     user-select: none;
 }
 
-#topology_canvas{background:url('../img/graphpaper1.gif');}
+#topology_canvas{background:url('../img/graphpaper1.gif');border:1px solid silver;}

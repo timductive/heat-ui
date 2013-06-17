@@ -3,13 +3,13 @@
 <div id="json"></div>
 
 <label>Stack Data:</label> {{ stack.stack_status|title }}: {{ stack.stack_status_reason }}
-<div id="stack">
+<div id="stack" data-stack="{{ stack }}">
     {{ stack }}
 </div>
 <br><br>
 
 <label>Resource Data:</label>
-<div id="resource">{{ resources }}</div>
+<div id="resources" data-resources="{{ resources }}">{{ resources }}</div>
 <br><br>
 
 <label>Events</label>
