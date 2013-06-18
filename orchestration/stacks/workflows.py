@@ -248,6 +248,7 @@ class LaunchStack(workflows.Workflow):
     multipart = True
     finalize_button_name = _('Next')
     success_message = _('Launched stack named "%(name)s".')
-    success_url = "horizon:project:stacks:index"
+    success_url = "horizon:heat:stacks:index"
     failure_message = _('Unable to launch stack named "%(name)s".')
     default_steps = (SetTemplate, SetParameters)
+

@@ -33,7 +33,7 @@ LOG = logging.getLogger(__name__)
 class LaunchStack(tables.LinkAction):
     name = "launch"
     verbose_name = _("Launch Stack")
-    url = "horizon:project:stacks:launch"
+    url = "horizon:heat:stacks:launch"
     classes = ("btn-create")
 
 

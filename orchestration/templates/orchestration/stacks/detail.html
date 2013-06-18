@@ -41,9 +41,9 @@ function InitTopology() {
     var layer1 = new Heat.Layer({height:Heat.rowHeight});
     var stack = new Heat.Stack({
         stage: stage,
+        layer: layer1,
         stack: $("#stack").data("stack")
     });
-    layer1.add(stack);
 
     var layer2 = new Heat.Layer({height:Heat.rowHeight,y:(layer1.getPosition().y+layer1.getHeight())});
     var resources = $("#resources").data("resources");
@@ -56,11 +56,7 @@ function InitTopology() {
             layer:layer2
         }));
     });
-    layer2.add(resource_group);
 
-    // add the layer to the stage
-    stage.add(layer1);
-    stage.add(layer2);
 }
 </script>
 {% endblock %}
