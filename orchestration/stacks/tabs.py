@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
 import logging
 import os
 from datetime import datetime
@@ -39,7 +40,7 @@ class StackTopologyTab(tabs.Tab):
     def get_context_data(self, request):
         context = {}
         stack = self.tab_group.kwargs['stack']
-        context['stack'] = to_json(stack)
+        context['stack'] = stack_json = to_json(stack)
 
         #Get Resources
         try:
@@ -51,19 +52,48 @@ class StackTopologyTab(tabs.Tab):
             messages.error(request, _(
                 'Unable to get resources for stack "%s".') % stack.stack_name)
 
-        #Get Events
-        try:
-            stack_identifier = '%s/%s' % (stack.stack_name, stack.id)
-            events = api.heat.events_list(self.request, stack_identifier)
-            LOG.debug('got events %s' % events)
-        except:
-            events = []
-            messages.error(request, _(
-                'Unable to get events for stack "%s".') % stack.stack_name)
 
-        context['resources'] = to_json(resources)
-        context['events'] = to_json(events)
+        context['resources'] = resources_json = to_json(resources)
 
+        d3_data = {"nodes":[],"links":[]}
+        group_ctr = 0
+        instance_ctr = 0
+        #First append Stack
+        stack_node = {
+            'name':stack.stack_name,
+            'status':stack.stack_status,
+            'group':group_ctr,
+            'radius':50,
+            'type':'stack',
+            'data':to_json(stack),
+            'instance':instance_ctr
+        }
+
+        d3_data['nodes'].append(stack_node)
+        group_ctr += 1
+        instance_ctr += 1
+
+        #Append all Resources
+        for resource in resources:
+            resource_node = {
+                'name':resource.logical_resource_id,
+                'status':resource.resource_status,
+                'group':group_ctr,
+                'radius':25,
+                'type':'resource',
+                'data':to_json(resource),
+                'instance':instance_ctr
+            }
+
+            d3_data['nodes'].append(resource_node)
+            d3_data['links'].append({
+                'source':resource_node['instance'],
+                'target':stack_node['instance'],
+                'value':1
+            })
+            instance_ctr += 1
+
+        context['d3_data'] = json.dumps(d3_data)
         return context
 
 class StackMetadataTab(tabs.Tab):
