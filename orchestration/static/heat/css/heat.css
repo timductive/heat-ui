@@ -16,16 +16,12 @@ form {margin:0;}
 #logs .error {color:red;font-weight:bold;}
 #logs .debug {color:green;font-style:italic;}
 
-
-/**** Heat Resource Topology CSS ****/
-canvas {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    -o-user-select: none;
-    user-select: none;
-}
-
-#topology_canvas{width:950px;float:right;background:url('../img/graphpaper1.gif');border:1px solid silver;}
+/**** Topology CSS ****/
+.link {stroke: #000;stroke-width: 1.5px;}
+.node {cursor:pointer;}
+.node text {font: 12px sans-serif;}
+#info_box {position:absolute;width:300px;}
+#info_box h3 {font-size:11pt;line-height:20px;}
+#info_box p {margin:0;font-size:9pt;line-height:14px;}
+#info_box a {margin:0;font-size:9pt;line-height:14px;}
+#info_box .error {color:darkred;}
