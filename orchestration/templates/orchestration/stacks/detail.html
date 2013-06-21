@@ -46,6 +46,7 @@ var node = svg.selectAll(".node")
         .data(graph.nodes)
         .enter().append("g")
         .attr("class", "node")
+        .attr("node_name", function(d){ return d.name })
         .call(force.drag);
 
 var node_image = node.append("image")
@@ -60,8 +61,26 @@ node.append("text")
         .attr("dy", function(d) { return d.text_y; })
         .text(function(d) { return d.name; });
 
+//Build node dictionary
+var nodes = {};
+node.each(function(){
+   d = this.__data__;
+   nodes[d.name] = this;
+});
+
+//Build node image dictionary
+var node_images = {};
+node_image.each(function(){
+   d = this.__data__;
+   node_images[d.name] = this;
+});
+
+//Load initial info box, and setup to change on click
+$("#info_box").html(graph.nodes[0].info_box);
+var current_info = graph.nodes[0].name;
 node.on("click", function(d) {
    $("#info_box").html(d.info_box);
+    current_info = d.name;
 });
 
 force.on("tick", function() {
@@ -73,6 +92,85 @@ force.on("tick", function() {
     node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 });
 
+
+//On Page load, set Action In Progress
+var in_progress = false;
+set_in_progress();
+
+function set_in_progress() {
+  node.each(function() {
+       var d = this.__data__;
+       if (d.in_progress == true){
+           in_progress = true;
+           return false;
+       }
+  });
+}
+
+//If status is In Progress, start AJAX polling
+if (in_progress == true){
+    var d3_url = '/heat/stack/get_d3_data/'+graph.nodes[0].stack_id+'/';
+
+    var ajax_poll = setInterval(function() {
+        $.getJSON(d3_url, function(json) {
+            var still_in_progress = false;
+            json.nodes.forEach(function(d){
+                //Update each nodes status, info_box, and image
+                nodes[d.name].__data__.status = d.status;
+
+                //Status has changed, image should be updated
+                if (node_images[d.name].__data__.image != d.image){
+                    node_images[d.name].__data__.image = d.image;
+                    var this_image = d3.select(node_images[d.name]);
+                    this_image
+                            .transition()
+                            .attr("x", function(d) { return d.image_x + 5; })
+                            .duration(100)
+                            .transition()
+                            .attr("x", function(d) { return d.image_x - 5; })
+                            .duration(100)
+                            .transition()
+                            .attr("x", function(d) { return d.image_x + 5; })
+                            .duration(100)
+                            .transition()
+                            .attr("x", function(d) { return d.image_x - 5; })
+                            .duration(100)
+                            .transition()
+                            .attr("xlink:href", d.image)
+                            .transition()
+                            .attr("x", function(d) { return d.image_x; })
+                            .duration(100)
+                            .ease("bounce")
+                }
+
+                //Status has changed, update info_box
+                nodes[d.name].__data__.info_box = d.info_box;
+                if (current_info== d.name){
+                    $("#info_box").html(d.info_box);
+                }
+
+                //Check if ANY nodes still in progress
+                if (d.in_progress==true){
+                    still_in_progress = true;
+                }
+            });
+
+            //if no nodes still in progress, stop AJAX polling
+            if (still_in_progress==false){
+                clearInterval(ajax_poll);
+            }
+        });
+    }, 2500)
+}
+</script>
+
+
+
+
+
+
+
+{% comment %}/*
 //Playing with Transitions, eventually add AJAX
 images = [
     "/static/heat/img/stack.png",
@@ -80,6 +178,37 @@ images = [
     "/static/heat/img/load2.gif",
 ]
 
+//Shaky/Nervous new image
+node_image.each(function() {
+   var this_image = d3.select(this);
+
+    setInterval(function() {
+        var image_url = images[Math.floor(Math.random()*images.length)];
+        this_image.transition()
+                .attr("x", function(d) { return d.image_x + 5; })
+                .duration(100)
+                .transition()
+                .attr("x", function(d) { return d.image_x - 5; })
+                .duration(100)
+                .transition()
+                .attr("x", function(d) { return d.image_x + 5; })
+                .duration(100)
+                .transition()
+                .attr("x", function(d) { return d.image_x - 5; })
+                .duration(100)
+                .transition()
+                .attr("xlink:href", image_url)
+                .transition()
+                .attr("x", function(d) { return d.image_x; })
+                .duration(100)
+                .ease("bounce")
+
+    }, 5000)
+
+});
+*/
+//Hide/Show Bouncy new image
+/*
 node_image.each(function() {
    var this_image = d3.select(this);
 
@@ -101,15 +230,10 @@ node_image.each(function() {
 
     }, 5000)
 });
-</script>
+*/
 
 
 
-
-
-
-
-{% comment %}
 <script>
 $(document).ready(function() {
     InitTopology();

@@ -2,6 +2,7 @@ from django.conf.urls import patterns, url
 from django.views.generic import RedirectView
 
 from orchestration.common.views import TopologyView, LogView
+from orchestration.stacks.api import d3_data
 from .views import DetailView, IndexView, LaunchStackView, ResourceView
 
 urlpatterns = patterns('',
@@ -16,4 +17,7 @@ urlpatterns = patterns('',
 
     url(r'^stacks/topology/(?P<stack_name>\w*)/$', TopologyView.as_view(), name='topology'),
     url(r'^stacks/logs/(?P<stack_name>\w*)/$', LogView.as_view(), name='logs'),
+
+    #AJAX
+    url(r'^stack/get_d3_data/(?P<stack_id>[^/]+)/$', 'orchestration.stacks.api.get_d3_data', name='d3_data')
 )
