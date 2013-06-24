@@ -16,108 +16,187 @@
 
 {% block heatjs %}
 <script>
-var width = $("#topology").width(),
-    height = 500;
+//Add indexOf definition for backwards-compatibility
+if (!Array.prototype.indexOf) {
+  Array.prototype.indexOf = function (searchElement /*, fromIndex */ ) {
+    "use strict";
+    if (this == null) {
+      throw new TypeError();
+    }
+    var t = Object(this);
+    var len = t.length >>> 0;
 
-var graph = $("#d3_data").data("d3_data");
+    if (len === 0) {
+      return -1;
+    }
+    var n = 0;
+    if (arguments.length > 1) {
+      n = Number(arguments[1]);
+      if (n != n) { // shortcut for verifying if it's NaN
+        n = 0;
+      } else if (n != 0 && n != Infinity && n != -Infinity) {
+        n = (n > 0 || -1) * Math.floor(Math.abs(n));
+      }
+    }
+    if (n >= len) {
+      return -1;
+    }
+    var k = n >= 0 ? n : Math.max(len - Math.abs(n), 0);
+    for (; k < len; k++) {
+      if (k in t && t[k] === searchElement) {
+        return k;
+      }
+    }
+    return -1;
+  }
+}
+//End indexOf
 
-var force = d3.layout.force()
-    .charge(-400)
-    .linkDistance(150)
-    .size([width, height])
-    .on("tick",tick);
 
-var svg = d3.select("#topology").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+function HeatTop(el){
+    // Add and remove elements on the graph object
+    this.addNode = function (node) {
+        nodes.push(node);
+        update();
+    }
 
-var nodes = force.nodes(graph.nodes);
-    links = force.links(graph.links);
-    node = svg.selectAll(".node");
-    link = svg.selectAll(".link");
-    link_dict = {};
-    node_dict = {};
-    node_images = {};
+    this.removeNode = function (id) {
+        var i = 0;
+        var n = findNode(id);
+        while (i < links.length) {
+            if ((links[i]['source'] == n)||(links[i]['target'] == n)) links.splice(i,1);
+            else i++;
+        }
+        nodes.splice(findNodeIndex(id),1);
+        update();
+    }
 
-update();
+    this.addLink = function (source, target) {
+        links.push({"source":findNode(source),"target":findNode(target)});
+        update();
+    }
 
-function update(){
-    link = link.data(graph.links)
+    var findNode = function(name) {
+        for (var i in nodes) {if (nodes[i]["name"] === id) return nodes[i]};
+    }
 
-    link.enter().insert("svg:line", "g.node")
-        .attr("class", "link")
-        .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+    var findNodeIndex = function(id) {
+        for (var i in nodes) {if (nodes[i]["id"] === id) return i};
+    }
 
-    node = node.data(graph.nodes);
+    var width = $("#topology").width(),
+        height = 500;
 
-    var nodeEnter = node.enter().append("g")
-        .attr("class", "node")
-        .attr("node_name", function(d){ return d.name })
-        .call(force.drag);
+    var d3_data = $("#d3_data").data("d3_data");
 
-    node.exit().remove();
-    link.exit().remove();
+    var force = d3.layout.force()
+        .charge(-400)
+        .linkDistance(150)
+        .size([width, height])
 
-    var node_image = nodeEnter.append("image")
-        .attr("xlink:href", function(d) { return d.image; })
-        .attr("x", function(d) { return d.image_x; })
-        .attr("y", function(d) { return d.image_y; })
-        .attr("width", function(d) { return d.image_size; })
-        .attr("height", function(d) { return d.image_size; });
+    var svg = d3.select(el).append("svg")
+        .attr("width", width)
+        .attr("height", height);
 
-    nodeEnter.append("text")
-        .attr("dx", function(d) { return d.text_x; })
-        .attr("dy", function(d) { return d.text_y; })
-        .text(function(d) { return d.name; });
+    var graph = d3_data;
 
-    //Build link dictionary
-    link.each(function() {
-        d = this.__data__;
-        link_dict[d.source + d.target] = this;
-    })
-    //Build node dictionary
-    node.each(function(){
+    force.nodes(graph.nodes);
+    force.links(graph.links);
+
+    var links = [];
+    var nodes = [];
+    var node_images = [];
+
+    var update = function() {
+        links = svg.selectAll(".link")
+            .data(graph.links)
+            .enter().append("line")
+            .attr("class", "link")
+            .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+        nodes = svg.selectAll(".node")
+                .data(graph.nodes)
+                .enter().append("g")
+                .attr("class", "node")
+                .attr("node_name", function(d){ return d.name })
+                .call(force.drag);
+
+        node_images = nodes.append("image")
+                .attr("xlink:href", function(d) { return d.image; })
+                .attr("x", function(d) { return d.image_x; })
+                .attr("y", function(d) { return d.image_y; })
+                .attr("width", function(d) { return d.image_size; })
+                .attr("height", function(d) { return d.image_size; });
+
+        nodes.append("text")
+                .attr("dx", function(d) { return d.text_x; })
+                .attr("dy", function(d) { return d.text_y; })
+                .text(function(d) { return d.name; });
+
+
+
+        force.on("tick", function() {
+            links.attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+            nodes.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        });
+        force.start();
+
+
+
+
+    }
+    update();
+
+    //Build initial node dictionary
+    var nodes_dict = {};
+    var nodes_list = [];
+    nodes.each(function(){
        d = this.__data__;
-       node_dict[d.name] = this;
+       nodes_dict[d.name] = this;
+        nodes_list.push(d);
     });
+    this.nodes_dict = nodes_dict;
+    this.nodes_list = nodes_list;
+
     //Build node image dictionary
-    node_image.each(function(){
+    var node_images_dict = {};
+    node_images.each(function(){
        d = this.__data__;
-       node_images[d.name] = this;
+       node_images_dict[d.name] = this;
     });
+    this.node_images_dict = node_images_dict;
 
-    //Setup click action for all nodes
-    node.on("click", function(d) {
-       $("#info_box").html(d.info_box);
-        current_info = d.name;
-    });
+    //Build Links
 
-    force.start();
+    this.links = links;
+    this.nodes = nodes;
+    this.node_images = node_images;
+    this.update = update;
 }
-function tick() {
-    link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
 
-    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-}
+//Instantiate Graph
+var heattop = new HeatTop("#topology");
+console.log(heattop.nodes);
 
 
 //Load initial info box, and setup to change on click
-$("#info_box").html(graph.nodes[0].info_box);
-var current_info = graph.nodes[0].name;
-
-
-
-
+var first_node = heattop.nodes_list[0];
+$("#info_box").html(first_node.info_box);
+var current_info = first_node.name;
+heattop.nodes.on("click", function(d) {
+   $("#info_box").html(d.info_box);
+    current_info = d.name;
+});
 
 //On Page load, set Action In Progress
 var in_progress = false;
-set_in_progress();
-
-function set_in_progress() {
-  node.each(function() {
+set_in_progress(heattop.nodes);
+function set_in_progress(nodes) {
+  nodes.each(function() {
        var d = this.__data__;
        if (d.in_progress == true){
            in_progress = true;
@@ -126,25 +205,27 @@ function set_in_progress() {
   });
 }
 
+console.log(in_progress);
 //If status is In Progress, start AJAX polling
 if (in_progress == true){
-    var d3_url = '/heat/stack/get_d3_data/'+graph.nodes[0].stack_id+'/';
-
+    var d3_url = '/heat/stack/get_d3_data/'+first_node.stack_id+'/';
+    console.log(d3_url);
     var ajax_poll = setInterval(function() {
         $.getJSON(d3_url, function(json) {
+            console.log(json);
             var still_in_progress = false;
-
             json.nodes.forEach(function(d){
+
                 //Check if node already exists
-                if (d.name in node_dict) {
+                if (heattop.nodes.indexOf(d.name) >= 0) {
                     //Node already exists, just update it
                     //Update each nodes status, info_box, and image
-                    node_dict[d.name].__data__.status = d.status;
+                    heattop.nodes[d.name].__data__.status = d.status;
 
                     //Status has changed, image should be updated
-                    if (node_images[d.name].__data__.image != d.image){
-                        node_images[d.name].__data__.image = d.image;
-                        var this_image = d3.select(node_images[d.name]);
+                    if (heattop.node_images[d.name].__data__.image != d.image){
+                        heattop.node_images[d.name].__data__.image = d.image;
+                        var this_image = d3.select(heattop.node_images[d.name]);
                         this_image
                                 .transition()
                                 .attr("x", function(d) { return d.image_x + 5; })
@@ -167,30 +248,19 @@ if (in_progress == true){
                     }
 
                     //Status has changed, update info_box
-                    node_dict[d.name].__data__.info_box = d.info_box;
+                    heattop.nodes[d.name].__data__.info_box = d.info_box;
                     if (current_info== d.name){
                         $("#info_box").html(d.info_box);
                     }
 
+                    heattop.update();
+
                 } else {
-                    //push new node
-                    graph.nodes.push(d);
+                    //Node doesn't exist yet, add it to graph
+                    heattop.addNode(d);
 
-                    //push new links
-                    json.links.forEach(function(json){
-                        var exists = false;
-                        graph.links.forEach(function(graph){
-                            if (json.source == graph.source.instance && json.target == graph.target.instance){
-                                exists = true;
-                            }
-                        });
-                        if (exists == false){
-                            graph.links.push(json);
-
-                        }
-                    });
-                    update();
                 }
+
 
                 //Check if ANY nodes still in progress
                 if (d.in_progress==true){

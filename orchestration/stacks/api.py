@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+import copy
 
 from django.http import HttpResponse
 
@@ -74,8 +75,6 @@ def d3_data(request, stack_id=''):
 
     #Append all Resources
     for resource in resources:
-        #FOR TESTING
-        # resource.resource_status = 'CREATE_IN_PROGRESS'
         resource_node = {
             'name':resource.logical_resource_id,
             'status':resource.resource_status,
