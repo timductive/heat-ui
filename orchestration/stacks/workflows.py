@@ -22,7 +22,7 @@ from horizon import forms
 from horizon import workflows
 
 from openstack_dashboard import api
-
+from orchestration.common.breadcrumbs import Breadcrumbs
 LOG = logging.getLogger(__name__)
 
 
@@ -242,7 +242,7 @@ class SetParameters(workflows.Step):
         return action
 
 
-class LaunchStack(workflows.Workflow):
+class LaunchStack(workflows.Workflow, Breadcrumbs):
     slug = 'launch_stack'
     name = _('Launch Stack')
     multipart = True

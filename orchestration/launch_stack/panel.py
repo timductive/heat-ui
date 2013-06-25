@@ -19,7 +19,7 @@ import horizon
 from orchestration import dashboard
 
 class LaunchStack(horizon.Panel):
-    name = _("Launch Stack")
+    name = _("Catalog")
     slug = "launch_stack"
     permissions = ('openstack.services.orchestration',)
 

@@ -1,10 +1,10 @@
 from django.conf.urls import patterns, url
 
-from orchestration.common.views import TopologyView, LogView
+from orchestration.stacks.views import LaunchStackView, LaunchHeatView
 from .views import IndexView
 
 urlpatterns = patterns('',
     url(r'^$', IndexView.as_view(), name='index'),
-    url(r'^topology/(?P<stack_name>\w*)/$', TopologyView.as_view(), name='topology'),
-    url(r'^logs/(?P<stack_name>\w*)/$', LogView.as_view(), name='logs'),
+    url(r'^launch/new/$', LaunchStackView.as_view(), name='launchnew'),
+    url(r'^launch$', LaunchHeatView.as_view(), name='launch'),
 )

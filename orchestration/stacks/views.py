@@ -19,9 +19,15 @@ from horizon import exceptions
 from horizon import tables
 from horizon import tabs
 from horizon import workflows
+from horizon import messages
 
-from django.core.urlresolvers import reverse
 from django.template.defaultfilters import title
+from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse
+from django.views.generic import TemplateView
+from django.http import HttpResponseRedirect
+from django.core.cache import cache
+from django.views import generic
 
 from openstack_dashboard import api
 
@@ -30,6 +36,7 @@ from orchestration.common.jsonutils import to_json
 from .tables import StacksTable
 from .tabs import ResourceDetailTabs, StackDetailTabs
 from .workflows import LaunchStack
+from .models import HeatTemplate
 
 
 LOG = logging.getLogger(__name__)
@@ -49,6 +56,8 @@ class IndexView(tables.DataTableView):
 
     def get_data(self):
         request = self.request
+        request.session['heat_template'] = None
+        request.session['heat_template_name'] = None
         try:
             stacks = api.heat.stacks_list(self.request)
             stacks = map(self._inject_name, stacks)
@@ -59,7 +68,7 @@ class IndexView(tables.DataTableView):
         return stacks
 
 
-class LaunchStackView(workflows.WorkflowView):
+class LaunchStackView(workflows.WorkflowView, Breadcrumbs):
     workflow_class = LaunchStack
 
     def get_initial(self):
@@ -68,6 +77,49 @@ class LaunchStackView(workflows.WorkflowView):
         initial['user_id'] = self.request.user.id
         return initial
 
+class LaunchHeatView(generic.FormView, Breadcrumbs):
+    template_name = 'orchestration/stacks/launch.html'
+    success_url = reverse_lazy('horizon:heat:stacks:index')
+
+    def get(self, request, *args, **kw):
+        template = request.session.get('heat_template', None)
+        template_name = request.session.get('heat_template_name', None)
+
+        if template is None:
+            if 'HTTP_REFERER' in request.META:
+                return HttpResponseRedirect(request.META['HTTP_REFERER'])
+            else:
+                return HttpResponseRedirect(reverse('horizon:heat:stacks:launch'))
+        t = HeatTemplate(template)
+        context = {'form': t.form(),
+                   'template_name': template_name}
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kw):
+        template = request.session.get('heat_template', None)
+        template_name = request.session.get('heat_template_name', None)
+        if template is None:
+            if 'HTTP_REFERER' in request.META:
+                return HttpResponseRedirect(request.META['HTTP_REFERER'])
+            else:
+                return HttpResponseRedirect(reverse('horizon:thermal:stacks:upload'))
+        t = HeatTemplate(template)
+        form = t.form(request.POST)
+        if form.is_valid():
+            try:
+                stack_name = form.cleaned_data.pop('stack_name')
+                params = {'stack_name': stack_name,
+                          'template': t.json,
+                          'parameters': form.cleaned_data,}
+                result = api.heat.stack_create(request, **params)
+            except Exception, e:
+                messages.error(request, e)
+                return self.render_to_response({'form': form,
+                                                'template_name': template_name})
+        else:
+            return self.render_to_response({'form': form,
+                                                'template_name': template_name})
+        return HttpResponseRedirect(self.success_url)
 
 class DetailView(tabs.TabView, Breadcrumbs):
     tab_group_class = StackDetailTabs

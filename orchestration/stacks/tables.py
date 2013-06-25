@@ -33,8 +33,8 @@ LOG = logging.getLogger(__name__)
 class LaunchStack(tables.LinkAction):
     name = "launch"
     verbose_name = _("Launch Stack")
-    url = "horizon:heat:stacks:launch"
-    classes = ("btn-create")
+    url = "horizon:heat:stacks:launchnew"
+    classes = ("btn-primary",)
 
 
 class DeleteStack(tables.BatchAction):

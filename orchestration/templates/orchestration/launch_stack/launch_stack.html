@@ -1,57 +1,84 @@
 {% extends 'orchestration/base.html' %}
 {% load i18n sizeformat %}
-{% block title %}{% trans "Launch Stack" %}{% endblock %}
+{% block title %}{% trans "Catalog" %}{% endblock %}
 
 {% block page_header %}
-  {% include "horizon/common/_page_header.html" with title=_("Launch Stack") %}
+  {% include "horizon/common/_page_header.html" with title=_("Catalog") %}
 {% endblock page_header %}
 
+{#{% block heatContent %}#}
+{#    <a href="{% url "horizon:heat:launch_stack:launch" %}" class="launch_button btn btn-primary" id="stacks__action_launch">Launch New Stack</a>#}
+{#    <br><br>#}
+{##}
+{#    <h3>Clone a Previous Stack</h3>#}
+{#    <div class="launch_table">#}
+{#        {{ clone_table.render }}#}
+{#    </div>#}
+{##}
+{#    <div id="cat_header">#}
+{#        <h3>Choose a Stack from a Catalogue</h3>#}
+{#        <form id="cat_form" method="get" action="">#}
+{#            <select name="cat_code" id="cat_code">#}
+{#                <option value="">Choose...</option>#}
+{#                {% if cat_code == "rs" %}#}
+{#                <option value="rs" selected="selected">Rackspace Templates</option>#}
+{#                {% else %}#}
+{#                <option value="rs">Rackspace Templates</option>#}
+{#                {%  endif %}#}
+{#                {% if cat_code == "aws" %}#}
+{#                <option value="aws" selected="selected">AWS Templates</option>#}
+{#                {% else %}#}
+{#                <option value="aws">AWS Templates</option>#}
+{#                {%  endif %}#}
+{#            </select>#}
+{#        </form>#}
+{#    </div>#}
+{#    <div class="launch_table">#}
+{#        {{ catalogue_table.render }}#}
+{#    </div>#}
+{##}
+{#{% endblock %}#}
+{##}
+{#{% block heatjs %}#}
+{#    <script>#}
+{#    $(document).ready(function() {#}
+{#        $("#cat_code").change(function() {#}
+{#            $("#cat_form").submit();#}
+{#        });#}
+{#    });#}
+{#    </script>#}
+{#{% endblock %}#}
+
 {% block heatContent %}
-    <h3>Launch a New Stack</h3>
-    <div id="new_stack" class="launchbox">
-        <label for="id_template_upload">Template File</label>
+<table id="catalogue" class="table table-bordered table-striped datatable">
+    <thead>
+      <tr>
+          <th class="sortable normal_column">Template Name</th>
+          <th class="actions_column">Actions</th>
+      </tr>
+    </thead>
 
-        <span class="help-block" style="display: none;">A local template to upload.</span>
-        <div class="input">
-          <input id="id_template_upload" name="template_upload" type="file">
-        </div>
-
-        <label for="id_template_url">Template Location</label>
-
-        <span class="help-block" style="display: none;">An external (HTTP) URL to load the template from.</span>
-        <div class="input">
-          <input id="id_template_url" name="template_url" type="text">
-        </div>
-
-        <a href="/project/stacks/launch" class="btn btn-primary" id="stacks__action_launch">Launch Stack</a>
-    </div>
-
-    <h3>Clone a Previous Stack</h3>
-    {{ clone_table.render }}
-
-    <div id="cat_header">
-        <h3>Choose a Stack from a Catalogue</h3>
-        <form id="cat_form" method="get" action="">
-            <select name="cat_code" id="cat_code">
-                <option value="">Choose...</option>
-                {% if cat_code == "aws" %}
-                <option value="aws" selected="selected">AWS Templates</option>
-                {% else %}
-                <option value="aws">AWS Templates</option>
-                {%  endif %}
-            </select>
-        </form>
-    </div>
-    {{ catalogue_table.render }}
-
-{% endblock %}
-
-{% block heatjs %}
-    <script>
-    $(document).ready(function() {
-        $("#cat_code").change(function() {
-            $("#cat_form").submit();
-        });
-    });
-    </script>
+    <tbody>
+        {% for template in templates %}
+          <tr class="" data-display="Wordpress Single Instance Rackspace Cloud Servers" id="catalogue__row__1">
+            <td class="sortable normal_column">{{ template.name }}</td>
+            <td class="actions_column">
+                <form name="submit_template" method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="template_name" value="{{ template.name }}" />
+                    <input type="hidden" name="template_url" value="{{ template.url }}" />
+                    <input class="btn btn-small btn-create btn btn-primary" type="submit" value="Launch Stack" />
+                </form>
+            </td>
+          </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2">
+          <span class="table_count">Displaying {{ count }} item</span>
+        </td>
+      </tr>
+    </tfoot>
+</table>
 {% endblock %}

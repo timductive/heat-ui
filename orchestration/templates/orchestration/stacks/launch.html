@@ -1,0 +1,62 @@
+{% extends 'orchestration/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Upload Heat Template" %}{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("Upload Heat Template") %}
+{% endblock page_header %}
+
+{% block heatContent %}
+
+<div class="table_wrapper">
+  <form method="post">
+  {% csrf_token %}
+  <table id="global_usage" class="table table-bordered table-striped">
+    <thead>
+      <tr class='table_caption'>
+        <th class='table_header'>
+          <h3 class='table_title'>Launch{% if template_name %}: {{ template_name }}{% endif %}</h3>
+          <div class="table_actions clearfix">&nbsp;</div>
+
+        </th>
+      </tr>
+      <tr>
+          <th class="">{{ template_name }}</th>
+      </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>
+        {{ form.as_p }}
+        <input type="submit" class="btn btn-primary" value="Create Stack">
+      </td>
+    </tr>
+    <!--tr>
+      <td>
+            Stack Name: <input type="textbox" name="StackName"></br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A unique name for the stack</font></i><br>
+            {% for p, val in parameters.items %}
+                {{ p }}: <input type="textbox" name="{{ p }}" value="{{ val.Default }}"><br/>
+                <i><font size="2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ val.Description }}</font></i><br>
+                {% if val.ConstraintDescription %}<i><font size="2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* {{ val.ConstraintDescription }}</font></i><br>{% endif %}
+            {% endfor %}
+            <input type="submit" value="Create Stack">
+
+      </td>
+    </tr-->
+
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>
+{#          <span>Displaying {{ templates|length }} item{{ templates|pluralize }}</span>#}
+
+        </td>
+      </td>
+    </tfoot>
+  </table>
+  </form>
+<hr>
+</div>
+{{ parameters }}
+{% endblock %}

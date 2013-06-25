@@ -1,8 +1,11 @@
 from datetime import datetime
+import httplib2
 
 from django.utils.translation import ugettext_lazy as _
 from django.template.defaultfilters import title, timesince
 from django.utils.safestring import mark_safe
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
 
 from horizon import tables
 from horizon.utils.filters import replace_underscores, parse_isotime
@@ -120,19 +123,29 @@ class CloneTable(DeploymentsTable):
 
 
 
-class LaunchCatalogue(tables.BatchAction):
+class LaunchCatalogue(tables.Action):
     name = "launch"
-    action_present = _("Launch")
-    action_past = _("Scheduled Launch of")
-    data_type_singular = _("Stack")
-    data_type_plural = _("Stacks")
-    classes = ('btn', 'btn-primary')
+    verbose_name = _("Launch Stack")
+    classes = ("btn-create btn btn-primary", )
 
-    def allowed(self, request, stack=None):
-        return True
+    print 'Inside Launch Action'
 
-    def action(self, request, stack_id):
-        pass
+    def single(self, data_table, request, object_id):
+        self.request = request
+        # h = httplib2.Http(".cache",
+        #                   disable_ssl_certificate_validation=True)
+        print 'DATATABLE'
+        print data_table
+
+        print 'Object Id'
+        print object_id
+        # resp, template = h.request(object_id.url, "GET")
+
+        # store the template so we can render it next
+        request.session['heat_template'] = 'TEST' #template
+        request.session['heat_template_name'] = object_id
+        return HttpResponseRedirect(reverse("horizon:heat:launch_stack:launch"))
+
 
 class CatFilterAction(tables.FilterAction):
     def filter(self, table, instances, filter_string):
@@ -143,16 +156,10 @@ class CatFilterAction(tables.FilterAction):
 
 class CataloguesTable(tables.DataTable):
     name = tables.Column("name", verbose_name=_("Template Name"),)
-    size = tables.Column("size", verbose_name=_("Size"))
-    view = tables.Column("view", verbose_name=_("View"))
 
     class Meta:
         name = "catalogue"
         verbose_name = _("Catalogues")
-        #status_columns = ["status", ]
-        #table_actions = (LaunchCatalogue, DeleteStack,)
-        #row_class = CataloguesUpdateRow
-        table_actions = (CatFilterAction, )
         row_actions = (LaunchCatalogue, )
 
 class LogsTable(tables.DataTable):
