@@ -62,9 +62,10 @@ class IndexView(tables.DataTableView):
             stacks = api.heat.stacks_list(self.request)
             stacks = map(self._inject_name, stacks)
             print stacks
-        except:
-            exceptions.handle(request,
-                              _('Unable to retrieve stack list.'))
+        except Exception as e:
+            print 'ERROR'
+            print e
+            # exceptions.handle(request, 'Unable to retrieve stack list.')
         return stacks
 
 

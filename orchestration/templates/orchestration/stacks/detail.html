@@ -141,6 +141,7 @@ if (in_progress == true){
                     //Update each nodes status, info_box, and image
                     node_dict[d.name].__data__.status = d.status;
 
+                    console.log(node_images[d.name].__data__.image + '=?' + d.image)
                     //Status has changed, image should be updated
                     if (node_images[d.name].__data__.image != d.image){
                         node_images[d.name].__data__.image = d.image;
