@@ -1,3 +1,4 @@
+import yaml
 import json
 import collections
 
@@ -13,8 +14,7 @@ class HeatTemplate(object):
     def __init__(self, template):
         # get uploaded form from the cache
         self.template = template
-        self.json = json.loads(template,
-                               object_pairs_hook=collections.OrderedDict)
+        self.json = yaml.safe_load(template,) #object_pairs_hook=collections.OrderedDict)
         self.form = self.generate_heat_form()
 
     def generate_heat_form(self):

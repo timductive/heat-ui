@@ -2,12 +2,12 @@ import json
 import logging
 import re
 import copy
+import httplib2
 
 from django.http import HttpResponse
+from django.conf import settings
 
-from openstack_dashboard import api
-from horizon import messages
-
+from openstack_dashboard.api.base import url_for
 from orchestration.stacks.sro import stack_info, resource_info
 
 LOG = logging.getLogger(__name__)
@@ -37,45 +37,121 @@ def get_status_img(status, type):
         else:
             return "/static/heat/img/server-green.svg"
 
+def get_rs_token(request):
+    #Setup RS Token
+    rs_user = request.user.username
+    rs_password = getattr(settings, 'RACKSPACE_PASSWORD', False)
+    url = 'https://identity.api.rackspacecloud.com/v2.0/tokens'
+    data = {}
+    data['auth'] = {}
+    data['auth']['passwordCredentials'] = {'username':rs_user,'password':rs_password}
+    h = httplib2.Http(".cache")
+    resp, content = h.request(
+        uri=url,
+        method='POST',
+        headers={'Content-Type': 'application/json; charset=UTF-8'},
+        body=json.dumps(data),
+        )
+    content = json.loads(content)
+    rs_token = content.get('access').get('token').get('id')
+    return rs_token
+
+def get_stacks(request):
+    endpoint = url_for(request, 'orchestration')
+    stacks_list_url = endpoint + '/stacks?limit=20'
+    rs_user = request.user.username
+    rs_password = getattr(settings, 'RACKSPACE_PASSWORD', False)
+
+    headers = {}
+    headers['X-Auth-User'] = rs_user
+    headers['X-Auth-Token'] = get_rs_token(request)
+    headers['X-Auth-Key'] = rs_password
+    headers['Content-Type'] = 'application/json; charset=UTF-8'
+
+    h = httplib2.Http(".cache")
+    resp, content = h.request(
+        uri=stacks_list_url,
+        method='GET',
+        headers=headers,
+        )
+    stacks = json.loads(content)
+    return stacks
+
+def get_stack(request, stack_id):
+    endpoint = url_for(request, 'orchestration')
+    stack_url = endpoint + '/stacks/' + stack_id
+    rs_user = request.user.username
+    rs_password = getattr(settings, 'RACKSPACE_PASSWORD', False)
+
+    headers = {}
+    headers['X-Auth-User'] = rs_user
+    headers['X-Auth-Token'] = get_rs_token(request)
+    headers['X-Auth-Key'] = rs_password
+    headers['Content-Type'] = 'application/json; charset=UTF-8'
+
+    h = httplib2.Http(".cache")
+    resp, content = h.request(
+        uri=stack_url,
+        method='GET',
+        headers=headers,
+        )
+    stack = json.loads(content)
+    return stack.get('stack')
+
+def get_resources(request, stack_name, stack_id):
+    endpoint = url_for(request, 'orchestration')
+    resources_list_url = endpoint + '/stacks/' + stack_name + '/' + stack_id + '/resources'
+    rs_user = request.user.username
+    rs_password = getattr(settings, 'RACKSPACE_PASSWORD', False)
+
+    headers = {}
+    headers['X-Auth-User'] = rs_user
+    headers['X-Auth-Token'] = get_rs_token(request)
+    headers['X-Auth-Key'] = rs_password
+    headers['Content-Type'] = 'application/json; charset=UTF-8'
+
+    h = httplib2.Http(".cache")
+    resp, content = h.request(
+        uri=resources_list_url,
+        method='GET',
+        headers=headers,
+        )
+    resources = json.loads(content)
+    return resources.get('resources')
+
 
 def d3_data(request, stack_id=''):
-    #Get Stack
-    try:
-        stack = api.heat.stack_get(request, stack_id)
-        LOG.debug('get stack %s' % stack)
-    except:
-        stack = Stack()
-        messages.error(request, _('Unable to get stack for stack id "%s".') % stack_id)
+    stack = get_stack(request, stack_id)
+    stack_name = stack.get('stack_name','')
+    resources = get_resources(request, stack_name, stack_id)
 
-    #Get Resources
-    try:
-        resources = api.heat.resources_list(request, stack_id)
-        LOG.debug('got resources %s' % resources)
-    except:
-        resources = []
-        messages.error(request, _(
-            'Unable to get resources for stack "%s".') % stack.stack_name)
+
 
     d3_data = {"nodes":[],"links":[]}
     group_ctr = 0
     instance_ctr = 0
     #FOR TESTING
-    # stack.stack_status = 'CREATE_IN_PROGRESS'
+    # stack['stack_status'] = 'CREATE_IN_PROGRESS'
+
+    print 'START D3 API HERE'
+    print stack
+    print resources
+
 
     #First append Stack
     stack_node = {
-        'stack_id':stack.id,
-        'name':stack.stack_name,
-        'status':stack.stack_status,
-        'image':get_status_img(stack.stack_status, 'stack'),
+        'stack_id':stack.get('id'),
+        'name':stack.get('stack_name'),
+        'status':stack.get('stack_status'),
+        'image':get_status_img(stack.get('stack_status'), 'stack'),
         'image_size':60,
-        'image_x':-20,
-        'image_y':-20,
+        'image_x':-30,
+        'image_y':-30,
         'text_x':40,
         'text_y':".35em",
         'group':group_ctr,
         'instance':instance_ctr,
-        'in_progress':True if re.search('IN_PROGRESS', stack.stack_status) else False,
+        'in_progress':True if re.search('IN_PROGRESS', stack.get('stack_status')) else False,
         'info_box':stack_info(stack)
     }
 
@@ -86,17 +162,17 @@ def d3_data(request, stack_id=''):
     #Append all Resources
     for resource in resources:
         resource_node = {
-            'name':resource.logical_resource_id,
-            'status':resource.resource_status,
-            'image':get_status_img(resource.resource_status, 'server'),
+            'name':resource.get('logical_resource_id'),
+            'status':resource.get('resource_status'),
+            'image':get_status_img(resource.get('resource_status'), 'server'),
             'image_size':30,
-            'image_x':-10,
-            'image_y':-10,
+            'image_x':-15,
+            'image_y':-15,
             'text_x':25,
             'text_y':".35em",
             'group':group_ctr,
             'instance':instance_ctr,
-            'in_progress':True if re.search('IN_PROGRESS', stack.stack_status) else False,
+            'in_progress':True if re.search('IN_PROGRESS', resource.get('resource_status')) else False,
             'info_box':resource_info(resource)
         }
 

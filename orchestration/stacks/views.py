@@ -14,6 +14,7 @@
 
 import json
 import logging
+import httplib2
 
 from horizon import exceptions
 from horizon import tables
@@ -83,8 +84,11 @@ class LaunchHeatView(generic.FormView, Breadcrumbs):
     success_url = reverse_lazy('horizon:heat:stacks:index')
 
     def get(self, request, *args, **kw):
-        template = request.session.get('heat_template', None)
+        template_url = request.session.get('heat_template_url', None)
         template_name = request.session.get('heat_template_name', None)
+
+        h = httplib2.Http(".cache",disable_ssl_certificate_validation=True)
+        resp, template = h.request(template_url, "GET")
 
         if template is None:
             if 'HTTP_REFERER' in request.META:
@@ -97,8 +101,12 @@ class LaunchHeatView(generic.FormView, Breadcrumbs):
         return self.render_to_response(context)
 
     def post(self, request, *args, **kw):
-        template = request.session.get('heat_template', None)
+        template_url = request.session.get('heat_template_url', None)
         template_name = request.session.get('heat_template_name', None)
+
+        h = httplib2.Http(".cache",disable_ssl_certificate_validation=True)
+        resp, template = h.request(template_url, "GET")
+
         if template is None:
             if 'HTTP_REFERER' in request.META:
                 return HttpResponseRedirect(request.META['HTTP_REFERER'])
@@ -139,8 +147,8 @@ class DetailView(tabs.TabView, Breadcrumbs):
             try:
                 stack = api.heat.stack_get(request, stack_id)
                 self._stack = stack
-            except:
-                msg = _("Unable to retrieve stack.")
+            except Exception as msg:
+                msg = str(msg) + "Unable to retrieve stack."
                 redirect = reverse('horizon:project:stacks:index')
                 exceptions.handle(request, msg, redirect=redirect)
         return self._stack

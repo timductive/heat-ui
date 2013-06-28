@@ -62,11 +62,12 @@ class IndexView(generic.TemplateView):
         template_name = request.POST.get('template_name')
         template_url = request.POST.get('template_url')
 
-        h = httplib2.Http(".cache",disable_ssl_certificate_validation=True)
-        resp, template = h.request(template_url, "GET")
+        # h = httplib2.Http(".cache",disable_ssl_certificate_validation=True)
+        # resp, template = h.request(template_url, "GET")
 
         # store the template so we can render it next
-        request.session['heat_template'] = template
+        # request.session['heat_template'] = template
+        request.session['heat_template_url'] = template_url
         request.session['heat_template_name'] = template_name
 
         return HttpResponseRedirect(reverse("horizon:heat:launch_stack:launch"))

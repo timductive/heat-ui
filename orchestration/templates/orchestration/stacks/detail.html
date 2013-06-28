@@ -42,11 +42,6 @@ var nodes = force.nodes(graph.nodes);
 update();
 
 function update(){
-    link = link.data(graph.links)
-
-    link.enter().insert("svg:line", "g.node")
-        .attr("class", "link")
-        .style("stroke-width", function(d) { return Math.sqrt(d.value); });
 
     node = node.data(graph.nodes);
 
@@ -54,9 +49,6 @@ function update(){
         .attr("class", "node")
         .attr("node_name", function(d){ return d.name })
         .call(force.drag);
-
-    node.exit().remove();
-    link.exit().remove();
 
     var node_image = nodeEnter.append("image")
         .attr("xlink:href", function(d) { return d.image; })
@@ -69,6 +61,13 @@ function update(){
         .attr("dx", function(d) { return d.text_x; })
         .attr("dy", function(d) { return d.text_y; })
         .text(function(d) { return d.name; });
+
+
+    link = link.data(graph.links)
+
+    link.enter().insert("svg:line", "g.node")
+        .attr("class", "link")
+        .style("stroke-width", function(d) { return Math.sqrt(d.value); });
 
     //Build link dictionary
     link.each(function() {
@@ -91,7 +90,8 @@ function update(){
        $("#info_box").html(d.info_box);
         current_info = d.name;
     });
-
+    node.exit().remove();
+    link.exit().remove();
     force.start();
 }
 function tick() {
