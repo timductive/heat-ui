@@ -15,19 +15,28 @@ LOG = logging.getLogger(__name__)
 class Stack(object):
     pass
 
-def get_status_img(status):
+def get_status_img(status, type):
     '''
     Sets the image url and in_progress action sw based on status.
     '''
     in_progress = True if re.search('IN_PROGRESS', status) else False
     failed = True if re.search('FAILED', status) else False
 
-    if failed:
-        return "/static/heat/img/stack_error.png"
-    elif in_progress:
-        return "/static/heat/img/load2.gif"
-    else:
-        return "/static/heat/img/stack.png"
+    if type == 'stack':
+        if failed:
+            return "/static/heat/img/stack-red.svg"
+        elif in_progress:
+            return "/static/heat/img/stack-gray.svg"
+        else:
+            return "/static/heat/img/stack-green.svg"
+    elif type == 'server':
+        if failed:
+            return "/static/heat/img/server-red.svg"
+        elif in_progress:
+            return "/static/heat/img/server-gray.svg"
+        else:
+            return "/static/heat/img/server-green.svg"
+
 
 def d3_data(request, stack_id=''):
     #Get Stack
@@ -58,11 +67,11 @@ def d3_data(request, stack_id=''):
         'stack_id':stack.id,
         'name':stack.stack_name,
         'status':stack.stack_status,
-        'image':get_status_img(stack.stack_status),
-        'image_size':40,
+        'image':get_status_img(stack.stack_status, 'stack'),
+        'image_size':60,
         'image_x':-20,
         'image_y':-20,
-        'text_x':30,
+        'text_x':40,
         'text_y':".35em",
         'group':group_ctr,
         'instance':instance_ctr,
@@ -79,11 +88,11 @@ def d3_data(request, stack_id=''):
         resource_node = {
             'name':resource.logical_resource_id,
             'status':resource.resource_status,
-            'image':get_status_img(resource.resource_status),
-            'image_size':20,
+            'image':get_status_img(resource.resource_status, 'server'),
+            'image_size':30,
             'image_x':-10,
             'image_y':-10,
-            'text_x':20,
+            'text_x':25,
             'text_y':".35em",
             'group':group_ctr,
             'instance':instance_ctr,
