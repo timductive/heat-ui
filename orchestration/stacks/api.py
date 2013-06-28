@@ -20,8 +20,9 @@ def get_status_img(status):
     Sets the image url and in_progress action sw based on status.
     '''
     in_progress = True if re.search('IN_PROGRESS', status) else False
+    failed = True if re.search('FAILED', status) else False
 
-    if status == 'CREATE_FAILED':
+    if failed:
         return "/static/heat/img/stack_error.png"
     elif in_progress:
         return "/static/heat/img/load2.gif"
