@@ -159,6 +159,13 @@ def d3_data(request, stack_id=''):
     group_ctr += 1
     instance_ctr += 1
 
+    #For Testing Only
+    # r1 = copy.copy(resources[0])
+    # r1['logical_resource_id'] = 'test1'
+    # r2 = copy.copy(resources[0])
+    # r2['logical_resource_id'] = 'test2'
+    # resources.append(r1)
+    # resources.append(r2)
     #Append all Resources
     for resource in resources:
         resource_node = {
