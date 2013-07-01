@@ -28,28 +28,28 @@ def get_status_img(status, type):
         if failed:
             return "/static/heat/img/lb-red.svg"
         elif in_progress:
-            return "/static/heat/img/lb-gray.svg"
+            return "/static/heat/img/lb-gray.gif"
         else:
             return "/static/heat/img/lb-green.svg"
     elif db_instance:
         if failed:
             return "/static/heat/img/db-red.svg"
         elif in_progress:
-            return "/static/heat/img/db-gray.svg"
+            return "/static/heat/img/db-gray.gif"
         else:
             return "/static/heat/img/db-green.svg"
     elif type == 'stack':
         if failed:
             return "/static/heat/img/stack-red.svg"
         elif in_progress:
-            return "/static/heat/img/stack-gray.svg"
+            return "/static/heat/img/stack-gray.gif"
         else:
             return "/static/heat/img/stack-green.svg"
     else:
         if failed:
             return "/static/heat/img/server-red.svg"
         elif in_progress:
-            return "/static/heat/img/server-gray.svg"
+            return "/static/heat/img/server-gray.gif"
         else:
             return "/static/heat/img/server-green.svg"
 
