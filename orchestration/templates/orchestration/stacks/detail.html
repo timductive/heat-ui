@@ -22,8 +22,9 @@ var width = $("#topology").width(),
 var graph = $("#d3_data").data("d3_data");
 
 var force = d3.layout.force()
-    .charge(-400)
-    .linkDistance(150)
+    .gravity(0.1)
+    .charge(-2000)
+    .linkDistance(100)
     .size([width, height])
     .on("tick",tick);
 
@@ -103,10 +104,12 @@ function tick() {
     node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 }
 
+//Load initial Stack box
+$("#stack_box").html(graph.stack.info_box);
 
 //Load initial info box, and setup to change on click
-$("#info_box").html(graph.nodes[0].info_box);
-var current_info = graph.nodes[0].name;
+//$("#info_box").html(graph.nodes[0].info_box);
+var current_info = ''; //graph.nodes[0].name;
 
 
 
@@ -128,12 +131,20 @@ function set_in_progress() {
 
 //If status is In Progress, start AJAX polling
 if (in_progress == true){
-    var d3_url = '/heat/stack/get_d3_data/'+graph.nodes[0].stack_id+'/';
+    var d3_url = '/heat/stack/get_d3_data/'+graph.stack.stack_id+'/';
 
     var ajax_poll = setInterval(function() {
         $.getJSON(d3_url, function(json) {
             var still_in_progress = false;
             var needs_update = false;
+
+            //update stack box
+            $("#stack_box").html(json.stack.info_box);
+            //check if stack still in progress
+            if (json.stack.in_progress==true){
+                    still_in_progress = true;
+            }
+
             json.nodes.forEach(function(d){
                 //Check if node already exists
                 if (d.name in node_dict) {

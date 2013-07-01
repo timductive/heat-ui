@@ -3,12 +3,13 @@ from django.template.defaultfilters import title
 
 from horizon.utils.filters import replace_underscores
 
-def stack_info(stack):
+def stack_info(stack, stack_image):
     stack['stack_status_desc'] = title(replace_underscores(stack.get('stack_status')))
     if stack.get('stack_status_reason'):
         stack['stack_status_reason'] = title(replace_underscores(stack.get('stack_status_reason')))
     context = {}
     context['stack'] = stack
+    context['stack_image'] = stack_image
     return render_to_string('orchestration/stacks/_stack_info.html',context)
 
 def resource_info(resource):

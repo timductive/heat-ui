@@ -20,8 +20,16 @@ form {margin:0;}
 .link {stroke: #000;stroke-width: 1.5px;}
 .node {cursor:pointer;}
 .node text {font: 12px sans-serif;}
-#info_box {position:absolute;width:300px;}
-#info_box h3 {font-size:11pt;line-height:20px;}
+
+#stack_box {position:absolute;width:300px;}
+#stack_box h3 {font-size:11pt;line-height:20px;}
+#stack_box p {margin:0;font-size:9pt;line-height:14px;}
+#stack_box a {margin:0;font-size:9pt;line-height:14px;}
+#stack_box img {float:left;}
+#stack_box #stack_info {float:left;}
+
+#info_box {position:absolute;width:300px;top:220px;}
+#info_box h3 {font-size:9pt;line-height:20px;}
 #info_box p {margin:0;font-size:9pt;line-height:14px;}
 #info_box a {margin:0;font-size:9pt;line-height:14px;}
 #info_box .error {color:darkred;}

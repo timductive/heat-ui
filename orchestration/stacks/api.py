@@ -22,14 +22,30 @@ def get_status_img(status, type):
     in_progress = True if re.search('IN_PROGRESS', status) else False
     failed = True if re.search('FAILED', status) else False
 
-    if type == 'stack':
+    lb_instance = True if re.search('LoadBalancer', type) else False
+    db_instance = True if re.search('DBInstance', type) else False
+    if lb_instance:
+        if failed:
+            return "/static/heat/img/lb-red.svg"
+        elif in_progress:
+            return "/static/heat/img/lb-gray.svg"
+        else:
+            return "/static/heat/img/lb-green.svg"
+    elif db_instance:
+        if failed:
+            return "/static/heat/img/db-red.svg"
+        elif in_progress:
+            return "/static/heat/img/db-gray.svg"
+        else:
+            return "/static/heat/img/db-green.svg"
+    elif type == 'stack':
         if failed:
             return "/static/heat/img/stack-red.svg"
         elif in_progress:
             return "/static/heat/img/stack-gray.svg"
         else:
             return "/static/heat/img/stack-green.svg"
-    elif type == 'server':
+    else:
         if failed:
             return "/static/heat/img/server-red.svg"
         elif in_progress:
@@ -128,14 +144,14 @@ def d3_data(request, stack_id=''):
 
 
     d3_data = {"nodes":[],"links":[]}
+    instance_map = {}
     group_ctr = 0
     instance_ctr = 0
     #FOR TESTING
     # stack['stack_status'] = 'CREATE_IN_PROGRESS'
 
     print 'START D3 API HERE'
-    print stack
-    print resources
+
 
 
     #First append Stack
@@ -149,15 +165,12 @@ def d3_data(request, stack_id=''):
         'image_y':-30,
         'text_x':40,
         'text_y':".35em",
-        'group':group_ctr,
-        'instance':instance_ctr,
         'in_progress':True if re.search('IN_PROGRESS', stack.get('stack_status')) else False,
-        'info_box':stack_info(stack)
+        'info_box':stack_info(stack, get_status_img(stack.get('stack_status'), 'stack'))
     }
+    #
+    d3_data['stack'] = stack_node
 
-    d3_data['nodes'].append(stack_node)
-    group_ctr += 1
-    instance_ctr += 1
 
     #For Testing Only
     # r1 = copy.copy(resources[0])
@@ -168,28 +181,44 @@ def d3_data(request, stack_id=''):
     # resources.append(r2)
     #Append all Resources
     for resource in resources:
+        print resource.get('required_by')
         resource_node = {
             'name':resource.get('logical_resource_id'),
             'status':resource.get('resource_status'),
-            'image':get_status_img(resource.get('resource_status'), 'server'),
-            'image_size':30,
-            'image_x':-15,
-            'image_y':-15,
-            'text_x':25,
+            'image':get_status_img(resource.get('resource_status'), resource.get('resource_type')),
+            'required_by':resource.get('required_by'),
+            'image_size':50,
+            'image_x':-25,
+            'image_y':-25,
+            'text_x':35,
             'text_y':".35em",
-            'group':group_ctr,
+            # 'group':group_ctr,
             'instance':instance_ctr,
             'in_progress':True if re.search('IN_PROGRESS', resource.get('resource_status')) else False,
             'info_box':resource_info(resource)
         }
 
         d3_data['nodes'].append(resource_node)
-        d3_data['links'].append({
-            'source':resource_node['instance'],
-            'target':stack_node['instance'],
-            'value':1
-        })
+        instance_map[resource.get('logical_resource_id')] = instance_ctr
         instance_ctr += 1
+
+    #Now that resources have been assigned instance_ctr, create relationships
+    for node in d3_data['nodes']:
+        if node.get('required_by'):
+            for dependency in node.get('required_by'):
+                #Check if dependency exists in instance_map yet
+                try:
+                    dependency_instance = instance_map[dependency]
+                except:
+                    #Dependency doesn't exist yet, ignore it for now
+                    pass
+                else:
+
+                    d3_data['links'].append({
+                        'source':node.get('instance'),
+                        'target':dependency_instance,
+                        'value':1
+                    })
 
     return json.dumps(d3_data)
 

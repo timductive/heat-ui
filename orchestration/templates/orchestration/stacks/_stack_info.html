@@ -1,11 +1,15 @@
-<h3>{{ stack.stack_name }}</h3>
+<img src="{{ stack_image }}" width="35px" height="35px" />
+<div id="stack_info">
+    <h3>{{ stack.stack_name }}</h3>
 
-{% if stack.stack_status == 'CREATE_FAILED' %}
-<p class="error">{{ stack.stack_status_desc }}</p>
-<p class="error">{{ stack.stack_status_reason }}</p>
-{% else %}
-<p>{{ stack.stack_status_desc }}</p>
-{% endif %}
+    {% if stack.stack_status == 'CREATE_FAILED' %}
+    <p class="error">{{ stack.stack_status_desc }}</p>
+    <p class="error">{{ stack.stack_status_reason }}</p>
+    {% else %}
+    <p>{{ stack.stack_status_desc }}</p>
+    {% endif %}
+</div>
+<div class="clear"></div>
 
 {% for output in stack.outputs %}
     {% if output.output_key == 'WebsiteURL' %}
