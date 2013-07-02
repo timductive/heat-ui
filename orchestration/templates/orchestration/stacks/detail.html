@@ -44,11 +44,16 @@ update();
 
 function update(){
 
-    node = node.data(graph.nodes);
+    node = node.data(force.nodes());
+    link = link.data(force.links());
+
+    node.exit().remove();
+    link.exit().remove();
 
     var nodeEnter = node.enter().append("g")
         .attr("class", "node")
         .attr("node_name", function(d){ return d.name })
+        .attr("node_id", function(d){ return d.instance })
         .call(force.drag);
 
     var node_image = nodeEnter.append("image")
@@ -58,13 +63,11 @@ function update(){
         .attr("width", function(d) { return d.image_size; })
         .attr("height", function(d) { return d.image_size; });
 
-    nodeEnter.append("text")
-        .attr("dx", function(d) { return d.text_x; })
-        .attr("dy", function(d) { return d.text_y; })
-        .text(function(d) { return d.name; });
+{#    nodeEnter.append("text")#}
+{#        .attr("dx", function(d) { return d.text_x; })#}
+{#        .attr("dy", function(d) { return d.text_y; })#}
+{#        .text(function(d) { return d.name; });#}
 
-
-    link = link.data(graph.links)
 
     link.enter().insert("svg:line", "g.node")
         .attr("class", "link")
@@ -87,12 +90,15 @@ function update(){
     });
 
     //Setup click action for all nodes
-    node.on("click", function(d) {
+    node.on("mouseover", function(d) {
        $("#info_box").html(d.info_box);
         current_info = d.name;
     });
-    node.exit().remove();
-    link.exit().remove();
+    node.on("mouseout", function(d) {
+        $("#info_box").html('');
+    });
+
+
     force.start();
 }
 function tick() {
@@ -118,8 +124,10 @@ var current_info = ''; //graph.nodes[0].name;
 //On Page load, set Action In Progress
 var in_progress = false;
 set_in_progress();
-
 function set_in_progress() {
+  if (graph.stack.in_progress == true){
+      in_progress = true;
+  }
   node.each(function() {
        var d = this.__data__;
        if (d.in_progress == true){
@@ -130,99 +138,141 @@ function set_in_progress() {
 }
 
 //If status is In Progress, start AJAX polling
+var poll_time = 0;
 if (in_progress == true){
-    var d3_url = '/heat/stack/get_d3_data/'+graph.stack.stack_id+'/';
+    //If in progress, poll every 3 seconds
+    poll_time = 3000;
+} else {
+    //If complete, poll every 30 seconds looking for updates
+    poll_time = 30000;
+}
 
-    var ajax_poll = setInterval(function() {
-        $.getJSON(d3_url, function(json) {
-            var still_in_progress = false;
-            var needs_update = false;
+var d3_url = '/heat/stack/get_d3_data/'+graph.stack.stack_id+'/';
 
-            //update stack box
-            $("#stack_box").html(json.stack.info_box);
-            //check if stack still in progress
-            if (json.stack.in_progress==true){
-                    still_in_progress = true;
-            }
+var ajax_poll = setInterval(function() {
+    $.getJSON(d3_url, function(json) {
+        var still_in_progress = false;
+        var needs_update = false;
 
-            json.nodes.forEach(function(d){
-                //Check if node already exists
-                if (d.name in node_dict) {
-                    //Node already exists, just update it
-                    //Update each nodes status, info_box, and image
-                    node_dict[d.name].__data__.status = d.status;
+        //update stack box
+        $("#stack_box").html(json.stack.info_box);
+        //check if stack still in progress
+        if (json.stack.in_progress==true){
+                still_in_progress = true;
+        }
 
-                    console.log(node_images[d.name].__data__.image + '=?' + d.image)
-                    //Status has changed, image should be updated
-                    if (node_images[d.name].__data__.image != d.image){
-                        node_images[d.name].__data__.image = d.image;
-                        var this_image = d3.select(node_images[d.name]);
-                        this_image
-                                .transition()
-                                .attr("x", function(d) { return d.image_x + 5; })
-                                .duration(100)
-                                .transition()
-                                .attr("x", function(d) { return d.image_x - 5; })
-                                .duration(100)
-                                .transition()
-                                .attr("x", function(d) { return d.image_x + 5; })
-                                .duration(100)
-                                .transition()
-                                .attr("x", function(d) { return d.image_x - 5; })
-                                .duration(100)
-                                .transition()
-                                .attr("xlink:href", d.image)
-                                .transition()
-                                .attr("x", function(d) { return d.image_x; })
-                                .duration(100)
-                                .ease("bounce")
-                    }
+{#        //Check for removed nodes#}
+{#        graph.nodes.forEach(function(node, node_idx){#}
+{#            var remove_node = true;#}
+{#            json.nodes.forEach(function(json){#}
+{#                if (node.name==json.name){#}
+{#                    remove_node = false;#}
+{#                }#}
+{#            });#}
+{##}
+{#            if (remove_node==true){#}
+{#                //remove node from graph#}
+{#                graph.nodes.splice(node_idx,1);#}
+{#                graph.links.shift();#}
+{#                graph.links.pop();#}
+{#                //replace graph links with new links#}
+{#                console.log(graph.links);#}
+{#                //remove links to node#}
+{#                graph.links.forEach(function(link, link_idx) {#}
+{#                   console.log('all links');#}
+{#                   console.log(link.source.instance);#}
+{#                   console.log(link.target.instance);#}
+{#                   if (link.source.instance==node_idx || link.target.instance==node_idx){#}
+{#                       graph.links.splice(link_idx,1);#}
+{#                       console.log('link removed');#}
+{#                       console.log(link.source.instance);#}
+{#                       console.log(link.target.instance);#}
+{#                   } else {#}
+{##}
+{#                       console.log('link stayed');#}
+{#                       console.log(link.source.instance);#}
+{#                       console.log(link.target.instance);#}
+{#                   }#}
+{#                });#}
+{#                needs_update = true;#}
+{#            }#}
+{#        });#}
 
-                    //Status has changed, update info_box
-                    node_dict[d.name].__data__.info_box = d.info_box;
-                    if (current_info== d.name){
-                        $("#info_box").html(d.info_box);
-                    }
+        //Check for updates and new nodes
+        json.nodes.forEach(function(d){
+            //Check if node already exists
+            if (d.name in node_dict) {
+                //Node already exists, just update it
+                //Update each nodes status, info_box, and image
+                node_dict[d.name].__data__.status = d.status;
 
-                } else {
-                    //push new node
-                    graph.nodes.push(d);
-                    needs_update = true;
+                //Status has changed, image should be updated
+                if (node_images[d.name].__data__.image != d.image){
+                    node_images[d.name].__data__.image = d.image;
+                    var this_image = d3.select(node_images[d.name]);
+                    this_image
+                            .transition()
+                            .attr("x", function(d) { return d.image_x + 5; })
+                            .duration(100)
+                            .transition()
+                            .attr("x", function(d) { return d.image_x - 5; })
+                            .duration(100)
+                            .transition()
+                            .attr("x", function(d) { return d.image_x + 5; })
+                            .duration(100)
+                            .transition()
+                            .attr("x", function(d) { return d.image_x - 5; })
+                            .duration(100)
+                            .transition()
+                            .attr("xlink:href", d.image)
+                            .transition()
+                            .attr("x", function(d) { return d.image_x; })
+                            .duration(100)
+                            .ease("bounce")
+                }
 
-                    //push new links
-                    json.links.forEach(function(json){
-                        var exists = false;
-                        graph.links.forEach(function(graph){
-                            if (json.source == graph.source.instance && json.target == graph.target.instance){
-                                exists = true;
-                            }
-                        });
-                        if (exists == false){
-                            graph.links.push(json);
+                //Status has changed, update info_box
+                node_dict[d.name].__data__.info_box = d.info_box;
 
+            } else {
+                //push new node
+                graph.nodes.push(d);
+                needs_update = true;
+
+                //push new links
+                json.links.forEach(function(json){
+                    var exists = false;
+                    graph.links.forEach(function(graph){
+                        if (json.source == graph.source.instance && json.target == graph.target.instance){
+                            exists = true;
                         }
                     });
-                    //update();
-                }
+                    if (exists == false){
+                        graph.links.push(json);
 
-                //Check if ANY nodes still in progress
-                if (d.in_progress==true){
-                    still_in_progress = true;
-                }
-            });
-
-            //if any updates needed, do update now
-            if (needs_update==true){
-                update();
+                    }
+                });
             }
 
-            //if no nodes still in progress, stop AJAX polling
-            if (still_in_progress==false){
-                clearInterval(ajax_poll);
+            //Check if ANY nodes still in progress
+            if (d.in_progress==true){
+                still_in_progress = true;
             }
         });
-    }, 5000)
-}
+
+        //if any updates needed, do update now
+        if (needs_update==true){
+            update();
+        }
+
+        //if no nodes still in progress, stop AJAX polling
+        if (still_in_progress==false){
+            //clearInterval(ajax_poll);
+            //If complete, set poll time to 30 seconds to check for updates
+            poll_time = 30000;
+        }
+    });
+}, poll_time)
 </script>
 
 

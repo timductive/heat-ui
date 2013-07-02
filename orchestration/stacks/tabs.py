@@ -89,7 +89,9 @@ class StackTemplateTab(tabs.Tab):
     template_name = "orchestration/stacks/_overview_template.html"
 
     def get_context_data(self, request):
-        return {"stack": self.tab_group.kwargs['stack']}
+        stack = self.tab_group.kwargs['stack']
+        template = json.dumps(api.heat.get_template(request, stack.id))
+        return {"stack": stack, "template":template}
 
 class Log(object):
     def __init__(self):

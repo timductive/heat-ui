@@ -179,6 +179,9 @@ def d3_data(request, stack_id=''):
     # r2['logical_resource_id'] = 'test2'
     # resources.append(r1)
     # resources.append(r2)
+    # print resources[0].get('logical_resource_id')
+    # resources.pop(0)
+
     #Append all Resources
     for resource in resources:
         print resource.get('required_by')
