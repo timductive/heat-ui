@@ -26,7 +26,7 @@ form {margin:0;}
 #stack_box p {margin:0;font-size:9pt;line-height:14px;}
 #stack_box a {margin:0;font-size:9pt;line-height:14px;}
 #stack_box img {float:left;}
-#stack_box #stack_info {float:left;}
+#stack_box #stack_info {float:left;white-space:normal;width:200px;}
 
 #info_box {position:absolute;width:300px;top:220px;}
 #info_box h3 {font-size:9pt;line-height:20px;}
