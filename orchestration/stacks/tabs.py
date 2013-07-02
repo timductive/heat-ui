@@ -90,7 +90,7 @@ class StackTemplateTab(tabs.Tab):
 
     def get_context_data(self, request):
         stack = self.tab_group.kwargs['stack']
-        template = json.dumps(api.heat.get_template(request, stack.id))
+        template = json.dumps(api.heat.get_template(request, stack.id), indent=4, separators=(',', ': '))
         return {"stack": stack, "template":template}
 
 class Log(object):
