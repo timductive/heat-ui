@@ -143,16 +143,23 @@ def d3_data(request, stack_id=''):
 
 
 
-    d3_data = {"nodes":[],"links":[]}
-    instance_map = {}
-    group_ctr = 0
-    instance_ctr = 0
+    d3_data = {"nodes":[], "stack":{}}
+
     #FOR TESTING
     # stack['stack_status'] = 'CREATE_IN_PROGRESS'
-
-    print 'START D3 API HERE'
-
-
+    # r1 = copy.copy(resources[1])
+    # r1['logical_resource_id'] = 'test1'
+    # r1['resource_status'] = 'CREATE_IN_PROGRESS'
+    # r2 = copy.copy(resources[1])
+    # r2['logical_resource_id'] = 'test2'
+    # resources.append(r1)
+    # resources.append(r2)
+    # resources[0]['required_by'].append('test1')
+    # resources[0]['required_by'].append('test2')
+    # print resources[0].get('logical_resource_id')
+    # resources.pop(5)
+    # resources.pop(2)
+    # resources.pop(0)
 
     #First append Stack
     stack_node = {
@@ -171,20 +178,8 @@ def d3_data(request, stack_id=''):
     #
     d3_data['stack'] = stack_node
 
-
-    #For Testing Only
-    # r1 = copy.copy(resources[0])
-    # r1['logical_resource_id'] = 'test1'
-    # r2 = copy.copy(resources[0])
-    # r2['logical_resource_id'] = 'test2'
-    # resources.append(r1)
-    # resources.append(r2)
-    # print resources[0].get('logical_resource_id')
-    # resources.pop(0)
-
     #Append all Resources
     for resource in resources:
-        print resource.get('required_by')
         resource_node = {
             'name':resource.get('logical_resource_id'),
             'status':resource.get('resource_status'),
@@ -195,33 +190,10 @@ def d3_data(request, stack_id=''):
             'image_y':-25,
             'text_x':35,
             'text_y':".35em",
-            # 'group':group_ctr,
-            'instance':instance_ctr,
             'in_progress':True if re.search('IN_PROGRESS', resource.get('resource_status')) else False,
             'info_box':resource_info(resource)
         }
-
         d3_data['nodes'].append(resource_node)
-        instance_map[resource.get('logical_resource_id')] = instance_ctr
-        instance_ctr += 1
-
-    #Now that resources have been assigned instance_ctr, create relationships
-    for node in d3_data['nodes']:
-        if node.get('required_by'):
-            for dependency in node.get('required_by'):
-                #Check if dependency exists in instance_map yet
-                try:
-                    dependency_instance = instance_map[dependency]
-                except:
-                    #Dependency doesn't exist yet, ignore it for now
-                    pass
-                else:
-
-                    d3_data['links'].append({
-                        'source':node.get('instance'),
-                        'target':dependency_instance,
-                        'value':1
-                    })
 
     return json.dumps(d3_data)
 

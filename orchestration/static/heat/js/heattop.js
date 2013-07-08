@@ -1,9 +1,9 @@
 /**
  *
  * HeatTop JS Framework
- * Dependencies: jQuery 1.7.1 or later, KineticJS 4.5.2 or later
+ * Dependencies: jQuery 1.7.1 or later, d3 v3 or later
  * Date: June 2013
- * Description: JS Framework that subclasses the KineticJS library to create
+ * Description: JS Framework that subclasses the D3 Force Directed Graph library to create
  * Heat-specific objects and relationships with the purpose of displaying
  * Stacks, Resources, and related Properties in a Resource Topology Graph.
  *
@@ -20,287 +20,252 @@
    under the License.
 */
 
-var Heat = {
-    Stage:Stage,
-    Layer:Layer,
-    Group:Group,
-    Stack:Stack,
-    Resource:Resource,
-    rowHeight:150,  //Each Sub-Dependency should be in a subsequent row of its Super,
-                    // Nbr of rows depends on Nbr of Dependencies
-    colors:{
-      success:'#0e630e',
-      successFill:'#daedda',
-      pending:'yellow',
-      pendingFill:'darkyellow',
-      failed:'darkred',
-      failedFill:'#f4e8e8',
-      neutral:'#353535',
-      neutralFill:'#ddd',
-    },
-}
+var width = $("#topology").width(),
+    height = 600,
+    ajax_url = '/heat/stack/get_d3_data/{{ stack_id }}/',
+    graph = $("#d3_data").data("d3_data"),
+    force = d3.layout.force()
+        .nodes(graph.nodes)
+        .links([])
+        .gravity(0.1)
+        .charge(-2000)
+        .linkDistance(100)
+        .size([width, height])
+        .on("tick",tick),
+    svg = d3.select("#topology").append("svg")
+        .attr("width", width)
+        .attr("height", height),
+    node = svg.selectAll(".node"),
+    link = svg.selectAll(".link"),
+    needs_update = false,
+    nodes = force.nodes(),
+    links = force.links();
 
-function Stage(options){
-    return new Kinetic.Stage(options);
-}
+build_links();
+update();
 
-function Layer(options){
-    return new Kinetic.Layer(options);
-}
+function update(){
+    node = node.data(nodes, function(d){return d.name});
+    link = link.data(links);
 
-function Group(options){
-    return new Kinetic.Group(options);
-}
+    var nodeEnter = node.enter().append("g")
+        .attr("class", "node")
+        .attr("node_name", function(d){ return d.name })
+        .attr("node_id", function(d){ return d.instance })
+        .call(force.drag);
 
-function Stack(options){
+    node_images = nodeEnter.append("image")
+        .attr("xlink:href", function(d) { return d.image; })
+        .attr("x", function(d) { return d.image_x; })
+        .attr("y", function(d) { return d.image_y; })
+        .attr("width", function(d) { return d.image_size; })
+        .attr("height", function(d) { return d.image_size; });
+    node.exit().remove();
 
-    loadImages(sources, function(images) {
-        return draw(images);
-      });
-
-    function draw(images){
-        var stack = options.stack;
-        var stage = options.stage;
-        var layer = options.layer;
-
-        //Define width of rectangle
-        var rect_width = 500;
-
-        var group = new Heat.Group({
-            x: (stage.getWidth()/2) - (rect_width/2),
-            y: 10
-        });
-
-        var rect = new Kinetic.Rect({
-            width: rect_width,
-            height: 100,
-            stroke: check_state(stack.stack_status),
-            strokeWidth: 2,
-            fill: check_state(stack.stack_status, true),
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: [5, 5],
-            shadowOpacity: 0.2,
-            cornerRadius: 10
-        });
-
-        var gradientRect = new Kinetic.Rect({
-           width:rect.getWidth(),
-           height:rect.getHeight(),
-           cornerRadius: 10,
-           fillPatternImage: images.gradient,
-        });
-
-        var stack_name = new Kinetic.Text({
-            text: stack.stack_name,
-            fontSize: 20,
-            fontStyle:'bold',
-            fontFamily: 'Calibri',
-            fill: Heat.colors.neutral,
-            padding: 5
-        });
-
-        var state_text = '';
-        if (stack.stack_status_reason != ''){
-            state_text = stack.stack_status + ': ' + stack.stack_status_reason;
-        } else {
-            state_text = stack.stack_status;
-        }
-        var stack_state = new Kinetic.Text({
-            //x: stack_name.getPosition().x + stack_name.getWidth(),
-            y: 6,
-            width:rect.getWidth(),
-            text: state_text,
-            fontSize: 14,
-            fontStyle:'bold',
-            fontFamily: 'Calibri',
-            fill: check_state(stack.stack_status),
-            padding: 5,
-            align:'right',
-        });
-
-        var stack_desc = new Kinetic.Text({
-            y:stack_name.getPosition().y + stack_name.getHeight(),
-            width:rect.getWidth(),
-            height:rect.getHeight() - stack_name.getHeight(),
-            text: stack.description,
-            fontSize: 11,
-            fontStyle:'normal',
-            fontFamily: 'Calibri',
-            fill: Heat.colors.neutral,
-            padding: 5
-        });
-
-
-
-        // add the shapes to the group
-        group.add(rect);
-        group.add(gradientRect);
-        group.add(stack_name);
-        group.add(stack_state);
-        group.add(stack_desc);
-
-        layer.add(group);
-        stage.add(layer);
-
-        return group
-    }
-
-
-}
-
-function Resource(options){
-
-    loadImages(sources, function(images) {
-        return draw(images);
+    link.enter().insert("svg:line", "g.node")
+        .attr("class", "link")
+        .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+    link.exit().remove();
+    //Setup click action for all nodes
+    node.on("mouseover", function(d) {
+       $("#info_box").html(d.info_box);
+        current_info = d.name;
+    });
+    node.on("mouseout", function(d) {
+        $("#info_box").html('');
     });
 
-    function draw(images){
-        var resource = options.resource;
-        var stage = options.stage;
-        var layer = options.layer;
+    force.start();
+}
+function tick() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
 
-        //Define width of rectangle
-        var rect_width = 150;
-
-        var group = new Heat.Group({
-            x: (stage.getWidth()/2) - (rect_width/2),
-            y: 10
-        });
-
-        var rect = new Kinetic.Rect({
-            width: rect_width,
-            height: 100,
-            stroke: check_state(resource.resource_status),
-            strokeWidth: 2,
-            fill: check_state(resource.resource_status, true),
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: [5, 5],
-            shadowOpacity: 0.2,
-            cornerRadius: 10
-        });
-
-        var gradientRect = new Kinetic.Rect({
-           width:rect.getWidth(),
-           height:rect.getHeight(),
-           cornerRadius: 10,
-           fillPatternImage: images.gradient,
-        });
-
-
-        var resource_name = new Kinetic.Text({
-            width:rect_width,
-            height:14,
-            text: resource.logical_resource_id,
-            fontSize: 14,
-            fontStyle:'bold',
-            fontFamily: 'Calibri',
-            fill: Heat.colors.neutral,
-            padding: 5
-        });
-
-        var state_text = '';
-        if (resource.resource_status_reason != ''){
-            state_text = resource.resource_status + ':';
-        } else {
-            state_text = resource.resource_status;
-        }
-        var resource_state = new Kinetic.Text({
-            y: resource_name.getPosition().y + resource_name.getHeight() + 5,
-            width:rect.getWidth(),
-            height:12,
-            text: state_text,
-            fontSize: 12,
-            fontStyle:'bold',
-            fontFamily: 'Calibri',
-            fill: check_state(resource.resource_status),
-            padding: 5,
-        });
-        var state_reason = false;
-        var resource_type_y = resource_state.getPosition().y + resource_state.getHeight();
-        if (resource.resource_status_reason != ''){
-            state_reason = new Kinetic.Text({
-                y: resource_state.getPosition().y + resource_state.getHeight(),
-                width:rect.getWidth(),
-                height:12,
-                text: resource.resource_status_reason,
-                fontSize: 12,
-                fontStyle:'bold',
-                fontFamily: 'Calibri',
-                fill: check_state(resource.resource_status),
-                padding: 5,
-            });
-            resource_type_y =state_reason.getPosition().y + state_reason.getHeight()
-        }
-
-        var resource_type = new Kinetic.Text({
-            y:resource_type_y + 5,
-            width:rect.getWidth(),
-            height:rect.getHeight() - resource_name.getHeight(),
-            text: resource.resource_type,
-            fontSize: 11,
-            fontStyle:'normal',
-            fontFamily: 'Calibri',
-            fill: Heat.colors.neutral,
-            padding: 5
-        });
-
-        // add the shapes to the layer
-        group.add(rect);
-        group.add(gradientRect);
-        group.add(resource_name);
-        group.add(resource_state);
-        if (state_reason != false){group.add(state_reason)}
-        group.add(resource_type);
-
-        layer.add(group);
-        stage.add(layer);
-        return group
-
-    }
+    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 }
 
-function check_state(state, fill){
-    fill = typeof fill !== 'undefined' ? fill : false
+//Load initial Stack box
+$("#stack_box").html(graph.stack.info_box);
+//On Page load, set Action In Progress
+var in_progress = false;
+set_in_progress(graph.stack, node);
 
-    if (state == 'CREATE_FAILED'){
-        if (fill){return Heat.colors.failedFill;}
-        else{return Heat.colors.failed;}
-    } else if (state == 'CREATE_IN_PROGRESS'){
-        if (fill){return Heat.colors.pendingFill;}
-        else{return Heat.colors.pending;}
-    } else if (state == 'CREATE_COMPLETE'){
-        if (fill){return Heat.colors.successFill;}
-        else{return Heat.colors.success;}
-    } else {
-      if (fill){return Heat.colors.neutralFill;}
-        else{return Heat.colors.neutral;}
+//If status is In Progress, start AJAX polling
+var poll_time = 0;
+if (in_progress == true){poll_time = 3000;}
+else {poll_time = 30000;}
+ajax_poll(poll_time);
+
+function set_in_progress(stack, nodes) {
+    if (stack.in_progress == true){in_progress = true;}
+    for (var i=0;i<nodes.length;i++) {
+        var d = nodes[i];
+        if (d.in_progress == true){in_progress = true;return false;}
     }
 }
-
-var sources = {
-    darthVader: 'http://www.html5canvastutorials.com/demos/assets/darth-vader.jpg',
-    yoda: 'http://www.html5canvastutorials.com/demos/assets/yoda.jpg',
-    gradient: '/static/heat/img/topGradient.png',
+function findNode(name) {
+    for (var i=0;i<nodes.length;i++) {if (nodes[i].name === name){return nodes[i];}};
 };
 
-function loadImages(sources, callback) {
-    var images = {};
-    var loadedImages = 0;
-    var numImages = 0;
-    // get num of sources
-    for(var src in sources) {
-      numImages++;
+function findNodeIndex(name) {
+    for (var i=0;i<nodes.length;i++) {if (nodes[i].name==name){return i;}};
+};
+function findNodeImage(name) {
+    for (var i in node_images) {
+        if (node_images[i]["name"] === name){return node_images[i];}
+        else {return false;}
     }
-    for(var src in sources) {
-      images[src] = new Image();
-      images[src].onload = function() {
-        if(++loadedImages >= numImages) {
-          callback(images);
+};
+function addNode (node) {
+    nodes.push(node);
+    needs_update = true;
+};
+function removeNode (name) {
+    var i = 0;
+    var n = findNode(name);
+    while (i < links.length) {
+        if ((links[i]['source'] == n)||(links[i]['target'] == n))
+        {
+            links.splice(i,1);
         }
-      };
-      images[src].src = sources[src];
+        else i++;
+    }
+    nodes.splice(findNodeIndex(name),1);
+    needs_update = true;
+};
+function remove_nodes(old_nodes, new_nodes){
+    //Check for removed nodes
+    for (var i=0;i<old_nodes.length;i++) {
+        var remove_node = true;
+        for (var j=0;j<new_nodes.length;j++) {
+            if (old_nodes[i].name==new_nodes[j].name){
+                remove_node = false;
+                break;
+            }
+        }
+        if (remove_node==true){
+            removeNode(old_nodes[i].name);
+        }
+    }
+}
+function build_links(){
+    for (var i=0;i<nodes.length;i++){
+        build_node_links(nodes[i]);
+        build_reverse_links(nodes[i]);
+    }
+}
+function build_node_links(node){
+    for (var j=0;j<node.required_by.length;j++){
+        var push_link = true;
+        var target_idx = '';
+        var source_idx = findNodeIndex(node.name);
+        //make sure target node exists
+        try {
+            target_idx = findNodeIndex(node.required_by[j]);
+        } catch(err) {
+            console.log(err);
+            push_link =false;
+        }
+        //check for duplicates
+        for (var lidx=0;lidx<links.length;lidx++) {
+            if ((links[lidx]['source'] == source_idx)&&(links[lidx]['target'] == target_idx))
+            {
+                push_link=false;
+                break;
+            }
+        }
+
+        if (push_link==true && (source_idx && target_idx)){
+            links.push({
+               'source':source_idx,
+               'target':target_idx,
+               'value':1
+            });
+        }
     }
 }
 
+function build_reverse_links(node){
+    for (var i=0;i<nodes.length;i++){
+        if(nodes[i].required_by){
+            for (var j=0;j<nodes[i].required_by.length;j++){
+                var dependency = nodes[i].required_by[j];
+                //if new node is required by existing node, push new link
+                if(node.name==dependency){
+                    links.push({
+                        'source':findNodeIndex(nodes[i].name),
+                        'target':findNodeIndex(node.name),
+                        'value':1
+                    })
+                }
+            }
+        }
+    }
+}
+
+function ajax_poll(poll_time){
+    setTimeout(function() {
+        $.getJSON(ajax_url, function(json) {
+            $("#stack_box").html(json.stack.info_box);
+            set_in_progress(json.stack, json.nodes);
+            needs_update = false;
+
+            //Check Remove nodes
+            remove_nodes(nodes, json.nodes);
+
+            //Check for updates and new nodes
+            json.nodes.forEach(function(d){
+                current_node = findNode(d.name);
+                //Check if node already exists
+                if (current_node) {
+                    //Node already exists, just update it
+                    current_node.status = d.status;
+
+                    //Status has changed, image should be updated
+                    current_image = findNodeImage(d.name);
+                    if (current_image.image != d.image){
+                        current_image.image = d.image;
+                        var this_image = d3.select(current_image);
+                        this_image
+                                .transition()
+                                .attr("x", function(d) { return d.image_x + 5; })
+                                .duration(100)
+                                .transition()
+                                .attr("x", function(d) { return d.image_x - 5; })
+                                .duration(100)
+                                .transition()
+                                .attr("x", function(d) { return d.image_x + 5; })
+                                .duration(100)
+                                .transition()
+                                .attr("x", function(d) { return d.image_x - 5; })
+                                .duration(100)
+                                .transition()
+                                .attr("xlink:href", d.image)
+                                .transition()
+                                .attr("x", function(d) { return d.image_x; })
+                                .duration(100)
+                                .ease("bounce")
+                    }
+
+                    //Status has changed, update info_box
+                    current_node.info_box = d.info_box;
+
+                } else {
+                    addNode(d);
+                    build_links();
+                }
+            });
+
+            //if any updates needed, do update now
+            if (needs_update==true){
+                update();
+            }
+        });
+    //if no nodes still in progress, slow AJAX polling
+    if (in_progress==false){poll_time = 30000;}
+    else {poll_time = 3000;}
+    ajax_poll(poll_time);
+    }, poll_time);
+}
