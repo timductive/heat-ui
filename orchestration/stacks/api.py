@@ -161,6 +161,74 @@ def d3_data(request, stack_id=''):
     # resources.pop(2)
     # resources.pop(0)
 
+    #1
+    # stack['stack_status'] = 'CREATE_IN_PROGRESS'
+    # resources = [resources[0]]
+    # resources[0]['resource_status'] = 'CREATE_IN_PROGRESS'
+
+    #2
+    # stack['stack_status'] = 'CREATE_IN_PROGRESS'
+    # resources.pop(5)
+    # resources[0]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[1]['resource_status'] = 'CREATE_IN_PROGRESS'
+    # resources[2]['resource_status'] = 'CREATE_IN_PROGRESS'
+    # resources[3]['resource_status'] = 'CREATE_IN_PROGRESS'
+    # resources[4]['resource_status'] = 'CREATE_IN_PROGRESS'
+
+    #3
+    # stack['stack_status'] = 'CREATE_IN_PROGRESS'
+    # resources[0]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[1]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[2]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[3]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[4]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[5]['resource_status'] = 'CREATE_IN_PROGRESS'
+
+    #4
+    # stack['stack_status'] = 'CREATE_COMPLETE'
+    # resources[0]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[1]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[2]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[3]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[4]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[5]['resource_status'] = 'CREATE_COMPLETE'
+
+    #5
+    # stack['stack_status'] = 'UPDATE_IN_PROGRESS'
+    # resources[0]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[1]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[2]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[3]['resource_status'] = 'UPDATE_IN_PROGRESS'
+    # resources[4]['resource_status'] = 'UPDATE_IN_PROGRESS'
+    # resources[5]['resource_status'] = 'CREATE_COMPLETE'
+
+    #6
+    # stack['stack_status'] = 'UPDATE_COMPLETE'
+    # resources[0]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[1]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[2]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[3]['resource_status'] = 'UPDATE_COMPLETE'
+    # resources[4]['resource_status'] = 'UPDATE_COMPLETE'
+    # resources[5]['resource_status'] = 'CREATE_COMPLETE'
+
+    #7
+    # stack['stack_status'] = 'UPDATE_COMPLETE'
+    # resources[0]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[1]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[2]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[3]['resource_status'] = 'UPDATE_COMPLETE'
+    # resources[4]['resource_status'] = 'UPDATE_COMPLETE'
+    # resources.pop(5)
+
+    #8
+    # stack['stack_status'] = 'UPDATE_COMPLETE'
+    # resources[0]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[1]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[2]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[3]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[4]['resource_status'] = 'CREATE_COMPLETE'
+    # resources[5]['resource_status'] = 'CREATE_COMPLETE'
+
     #First append Stack
     stack_node = {
         'stack_id':stack.get('id'),

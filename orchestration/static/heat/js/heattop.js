@@ -21,8 +21,9 @@
 */
 
 var width = $("#topology").width(),
-    height = 600,
-    ajax_url = '/heat/stack/get_d3_data/{{ stack_id }}/',
+    height = 500,
+    stack_id = $("#stack_id").data("stack_id"),
+    ajax_url = '/heat/stack/get_d3_data/'+stack_id+'/',
     graph = $("#d3_data").data("d3_data"),
     force = d3.layout.force()
         .nodes(graph.nodes)
@@ -54,8 +55,9 @@ function update(){
         .attr("node_id", function(d){ return d.instance })
         .call(force.drag);
 
-    node_images = nodeEnter.append("image")
+    nodeEnter.append("image")
         .attr("xlink:href", function(d) { return d.image; })
+        .attr("id", function(d){return "image_"+ d.name})
         .attr("x", function(d) { return d.image_x; })
         .attr("y", function(d) { return d.image_y; })
         .attr("width", function(d) { return d.image_size; })
@@ -111,12 +113,6 @@ function findNode(name) {
 
 function findNodeIndex(name) {
     for (var i=0;i<nodes.length;i++) {if (nodes[i].name==name){return i;}};
-};
-function findNodeImage(name) {
-    for (var i in node_images) {
-        if (node_images[i]["name"] === name){return node_images[i];}
-        else {return false;}
-    }
 };
 function addNode (node) {
     nodes.push(node);
@@ -224,10 +220,9 @@ function ajax_poll(poll_time){
                     current_node.status = d.status;
 
                     //Status has changed, image should be updated
-                    current_image = findNodeImage(d.name);
-                    if (current_image.image != d.image){
-                        current_image.image = d.image;
-                        var this_image = d3.select(current_image);
+                    if (current_node.image != d.image){
+                        current_node.image = d.image;
+                        var this_image = d3.select("#image_"+current_node.name);
                         this_image
                                 .transition()
                                 .attr("x", function(d) { return d.image_x + 5; })
